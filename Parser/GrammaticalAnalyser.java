@@ -113,7 +113,7 @@ public class GrammaticalAnalyser {
                 analyseConstInitVal(); // ConstInitVal
                 word = getNextWord();
                 while (word.typeEquals("COMMA")) {
-                    getWord(); //,
+                    getWord(); // ,
                     analyseConstInitVal(); // ConstInitVal
                     word = getNextWord();
                 }
@@ -130,7 +130,7 @@ public class GrammaticalAnalyser {
         analyseVarDef(); // VarDef
         Word word = getNextWord();
         while (word.typeEquals("COMMA")) {
-            getWord(); //,
+            getWord(); // ,
             analyseVarDef(); // VarDef
             word = getNextWord();
         }
@@ -163,7 +163,7 @@ public class GrammaticalAnalyser {
                 analyseInitVal(); // InitVal
                 word = getNextWord();
                 while (word.typeEquals("COMMA")) {
-                    getWord(); //,
+                    getWord(); // ,
                     analyseInitVal(); // InitVal
                     word = getNextWord();
                 }
@@ -178,20 +178,12 @@ public class GrammaticalAnalyser {
     private void analyseFuncDef() { // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
         analyseFuncType(); // FuncType
         getWord(); // Ident
-        if (currentWord.typeEquals("IDENFR")) {
-            getWord(); // (
-            if (currentWord.typeEquals("LPARENT")) {
-                Word word = getNextWord(); // [
-                if (!word.typeEquals("RPARENT")) {
-                    analyseFuncFParams(); // FuncFParams]
-                }
-                getWord(); // )
-            } else {
-                error();
-            }
-        } else {
-            error();
+        getWord(); // (
+        Word word = getNextWord();
+        if (!word.typeEquals("RPARENT")) {
+            analyseFuncFParams();
         }
+        getWord(); // )
         analyseBlock(); // Block
         grammar.add("<FuncDef>"); // 函数定义
     }
@@ -201,7 +193,7 @@ public class GrammaticalAnalyser {
         getWord(); // main
         getWord(); // (
         getWord(); // )
-        analyseBlock(); // {}
+        analyseBlock(); // Block
         grammar.add("<MainFuncDef>"); // main函数定义
     }
 
@@ -304,17 +296,17 @@ public class GrammaticalAnalyser {
             getWord(); // (
             word = getNextWord();
             if (word.typeEquals("FORSTMT")) {
-                analyseForStmt();   // ForStmt
+                analyseForStmt(); // ForStmt
             }
             getWord(); // ;
             word = getNextWord();
             if (word.typeEquals("COND")) {
-                analyseCond();  // Cond
+                analyseCond(); // Cond
             }
             getWord(); // ;
             word = getNextWord();
             if (word.typeEquals("FORSTMT")) {
-                analyseForStmt();   // ForStmt
+                analyseForStmt(); // ForStmt
             }
             getWord(); // )
             analyseStmt(); // Stmt
@@ -338,7 +330,7 @@ public class GrammaticalAnalyser {
             word = getNextWord();
             while (word.typeEquals("COMMA")) {
                 getWord(); // ,
-                analyseExp(getExp());   // Exp
+                analyseExp(getExp()); // Exp
                 word = getNextWord();
             }
             getWord(); // )
@@ -426,7 +418,7 @@ public class GrammaticalAnalyser {
         grammar.add("<Number>");
     }
 
-    private void analyseUnaryExp(ArrayList<Word> exp) { // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' 
+    private void analyseUnaryExp(ArrayList<Word> exp) { // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')'
                                                         // | UnaryOp UnaryExp
         Word word = exp.get(0);
         if (word.typeEquals("PLUS") || word.typeEquals("MINU") || word.typeEquals("NOT")) { // UnaryOp UnaryExp
