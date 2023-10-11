@@ -295,18 +295,18 @@ public class GrammaticalAnalyser {
             getWord(); // for
             getWord(); // (
             word = getNextWord();
-            if (word.typeEquals("IDENFR")) {
-                analyseForStmt(); // ForStmt
+            if (word.typeEquals("IDENFR")) { // ForStmt
+                analyseForStmt(); 
             }
             getWord(); // ;
             word = getNextWord();
-            if (word.typeSymbolizeExp()) {
-                analyseCond(); // Cond
+            if (word.typeSymbolizeExp()) {  // Cond
+                analyseCond(); 
             }
             getWord(); // ;
             word = getNextWord();
-            if (word.typeEquals("IDENFR")) {
-                analyseForStmt(); // ForStmt
+            if (word.typeEquals("IDENFR")) { // ForStmt
+                analyseForStmt();
             }
             getWord(); // )
             analyseStmt(); // Stmt
@@ -343,7 +343,7 @@ public class GrammaticalAnalyser {
 
     private void analyseForStmt() { // ForStmt → LVal '=' Exp
         ArrayList<Word> exp = getExp();
-        analyseLVal(exp); // <LVal>
+        analyseLVal(exp); // LVal
         getWord(); // =
         analyseExp(getExp()); // Exp
     }
