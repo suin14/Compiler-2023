@@ -130,7 +130,7 @@ public class GrammaticalAnalyser {
         analyseVarDef(); // VarDef
         Word word = getNextWord();
         while (word.typeEquals("COMMA")) {
-            getWord(); // ,
+            getWord(); //,
             analyseVarDef(); // VarDef
             word = getNextWord();
         }
@@ -161,11 +161,11 @@ public class GrammaticalAnalyser {
             word = getNextWord();
             if (!word.typeEquals("RBRACK")) {
                 analyseInitVal(); // InitVal
-                Word word1 = getNextWord();
-                while (word1.typeEquals("COMMA")) {
-                    getWord(); // ,
+                word = getNextWord();
+                while (word.typeEquals("COMMA")) {
+                    getWord(); //,
                     analyseInitVal(); // InitVal
-                    word1 = getNextWord();
+                    word = getNextWord();
                 }
             }
             getWord(); // }
