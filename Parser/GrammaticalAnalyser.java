@@ -346,6 +346,7 @@ public class GrammaticalAnalyser {
         analyseLVal(exp); // LVal
         getWord(); // =
         analyseExp(getExp()); // Exp
+        grammar.add("<ForStmt>");
     }
 
     private void analyseExp(ArrayList<Word> exp) { // Exp → AddExp
