@@ -1,0 +1,39 @@
+int main(){
+	printf("71066002\n"); /*学号*/ 
+	int a = 1;
+	int b;
+	b = getint();
+	int c=20, d=520;
+	c=30;
+	printf("a = %d; b = %d; c = %d; d = %d;\n",a,b,c,d);
+
+	// 一维数组
+	int arr1[4] = {a,b,c,d};
+	//二维数组
+	int arr2[2][2] = {{a,b},{c,d}};
+	int arr3[3]={};
+	int arr4[4][4]={};
+
+	// 单目运算符
+	int n1,n2,n3,n4,n5;
+	n1 = a + b;
+	n2 = c - a;
+	n3 = n1 * n2;
+	n4 = n2 / n1; 
+	n5 = n3 % b;
+	printf("%d+%d=%d; %d-%d=%d; %d*%d=%d; %d/%d=%d; %dmod%d=%d\n",a,b,n1,c,a,n2,n1,n2,n3,n2,n1,n4,n3,b,n5);
+
+	int a1 = n1+n2+n3, a2 = n2-n3-n4, a3 = n3*n4*n5, a4 = n5/n1/n4, a5 = n4%n1%n1;
+	printf("%d+%d+%d = %d; %d-%d-%d = %d; %d*%d*%d = %d; %d/%d/%d = %d; %dmod%dmod%d = %d\n",n1,n2,n3,a1,n2,n3,n4,a2,n3,n4,n5 ,a3,n5,n1,n2,a4,n4,n5,n1,a5) ;
+
+	int m1 = 2, m2=4, m3=6, m4=8, m5=10, m6=12;
+	int r1 = m1 + m2;
+	int r2 = (m2 - m3) * r1;
+
+	printf("%d + %d = %d\n",m1,m2,r1);
+	printf("(%d-%d) * %d = %d\n",m2,m3,(m1 + m2),r2);
+	
+	printf("all chars : !()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^`abcdefghijklmnopqrstuvwxyz{|}~\n");
+	
+	return 0;
+}

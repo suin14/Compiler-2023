@@ -1,0 +1,47 @@
+int func() {
+    return 1;
+}
+
+int main() {
+    printf("71066002\n");
+
+    // for循环
+    int n = 0;
+	int a = 0;
+	for (; a < 1; a++) {
+		n = n + 1;
+    }
+    printf("%d\n",n);  
+
+    // if-else 条件判断
+    if (0 && func()){
+        printf("test1:error\n");
+    }
+    if (0 || func()) {
+        printf("test2\n");
+    }
+	if (0 || func() && 0) {
+        printf("test3\n");
+    }
+    if (1!=1 && 1==1){
+        printf("test4: error!\n");
+    } else {
+        printf("test4\n");
+    }
+    if (1!=1 || 1==1){
+        printf("test5\n");
+    } else {
+        printf("test5: error\n");
+    }
+
+    // while循环
+    int num = 1;
+	int i=5;
+	int old = i;
+	while(i > 0){
+		num = num * i;
+		i = i - 1;
+	}
+
+    return 0;
+}
