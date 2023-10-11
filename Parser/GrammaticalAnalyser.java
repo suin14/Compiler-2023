@@ -111,11 +111,11 @@ public class GrammaticalAnalyser {
             word = getNextWord();
             if (!word.typeEquals("RBRACE")) {
                 analyseConstInitVal(); // ConstInitVal
-                Word word1 = getNextWord();
-                while (word1.typeEquals("COMMA")) {
-                    getWord(); // ,
+                word = getNextWord();
+                while (word.typeEquals("COMMA")) {
+                    getWord(); //,
                     analyseConstInitVal(); // ConstInitVal
-                    word1 = getNextWord();
+                    word = getNextWord();
                 }
             }
             getWord(); // }
