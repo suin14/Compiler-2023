@@ -295,7 +295,7 @@ public class GrammaticalAnalyser {
             getWord(); // for
             getWord(); // (
             word = getNextWord();
-            if (word.typeEquals("FORSTMT")) {
+            if (word.typeEquals("IDENFR")) {
                 analyseForStmt(); // ForStmt
             }
             getWord(); // ;
@@ -305,7 +305,7 @@ public class GrammaticalAnalyser {
             }
             getWord(); // ;
             word = getNextWord();
-            if (word.typeEquals("FORSTMT")) {
+            if (word.typeEquals("IDENFR")) {
                 analyseForStmt(); // ForStmt
             }
             getWord(); // )
