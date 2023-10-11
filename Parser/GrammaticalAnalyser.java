@@ -257,7 +257,7 @@ public class GrammaticalAnalyser {
 
     private void analyseStmt() {
         Word word = getNextWord();
-        if (word.typeEquals("IDENFR")) { // LVal '=' Exp ';' | 'getint''('')'';'
+        if (word.typeEquals("IDENFR")) { // LVal '=' Exp ';' | LVal '=' 'getint''('')'';'
             ArrayList<Word> exp = getExp();
             if (!getNextWord().typeEquals("SEMICN")) {
                 analyseLVal(exp); // LVal
@@ -323,7 +323,7 @@ public class GrammaticalAnalyser {
                 analyseExp(getExp()); // Exp
             }
             getWord(); // ;
-        } else if (word.typeEquals("PRINTFTK")) { // 'printf''('FormatString{','Exp}')'';'
+        } else if (word.typeEquals("PRINTFTK")) { // 'printf' '(' FormatString { ',' Exp } ')' ';'
             getWord(); // printf
             getWord(); // (
             getWord(); // STRCON
@@ -342,17 +342,10 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseForStmt() { // ForStmt → LVal '=' Exp
-        Word word = getNextWord();
-        if (word.typeEquals("IDENFR")) {
-            ArrayList<Word> exp = getExp();
-            analyseLVal(exp); // <LVal>
-            getWord(); // =
-            analyseExp(getExp()); // Exp
-            getWord(); // ;
-        } else {
-            error();
-        }
-        grammar.add("<ForStmt>");
+        ArrayList<Word> exp = getExp();
+        analyseLVal(exp); // <LVal>
+        getWord(); // =
+        analyseExp(getExp()); // Exp
     }
 
     private void analyseExp(ArrayList<Word> exp) { // Exp → AddExp
