@@ -296,12 +296,12 @@ public class GrammaticalAnalyser {
             getWord(); // (
             word = getNextWord();
             if (word.typeEquals("IDENFR")) { // ForStmt
-                analyseForStmt(); 
+                analyseForStmt();
             }
             getWord(); // ;
             word = getNextWord();
-            if (word.typeSymbolizeExp()) {  // Cond
-                analyseCond(); 
+            if (word.typeSymbolizeExp()) { // Cond
+                analyseCond();
             }
             getWord(); // ;
             word = getNextWord();
