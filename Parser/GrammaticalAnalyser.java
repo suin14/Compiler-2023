@@ -343,7 +343,7 @@ public class GrammaticalAnalyser {
             }
             getWord(); // )
             getWord(); // ;
-        } else if (word.typeEquals("SEMICN")) {
+        } else if (word.typeEquals("SEMICN")) { // ;
             getWord(); // ;
         }
         grammar.add("<Stmt>");
@@ -426,8 +426,8 @@ public class GrammaticalAnalyser {
         grammar.add("<Number>");
     }
 
-    private void analyseUnaryExp(ArrayList<Word> exp) { // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp
-                                                        // UnaryExp
+    private void analyseUnaryExp(ArrayList<Word> exp) { // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' 
+                                                        // | UnaryOp UnaryExp
         Word word = exp.get(0);
         if (word.typeEquals("PLUS") || word.typeEquals("MINU") || word.typeEquals("NOT")) { // UnaryOp UnaryExp
             analyseUnaryOp(exp.get(0));
@@ -508,7 +508,7 @@ public class GrammaticalAnalyser {
         return new Exps(exps, symbols);
     }
 
-    private void analyseMulExp(ArrayList<Word> exp) { // MulExp → UnaryExp | MulExp ('*' | '/' | '%')
+    private void analyseMulExp(ArrayList<Word> exp) { // MulExp → UnaryExp | MulExp ('*' | '/' | '%') UnaryExp
         Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("MULT", "DIV", "MOD")));
         int j = 0;
         for (ArrayList<Word> exp1 : exps.getWords()) {
