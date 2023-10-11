@@ -95,9 +95,7 @@ public class GrammaticalAnalyser {
             getWord(); // [
             analyseConstExp(getExp()); // ConstExp
             getWord(); // ]
-            if (currentWord.typeEquals("RBRACK")) {
-
-            } else {
+            if (!currentWord.typeEquals("RBRACK")) {
                 error();
             }
             word = getNextWord();
