@@ -71,10 +71,9 @@ public class GrammaticalAnalyser {
 
     private void analyseConstDecl() { // ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';'
         getWord(); // const
-        Word word = getNextWord();
         analyseBType(); // Btype
         analyseConstDef(); // ConstDef
-        word = getNextWord();
+        Word word = getNextWord();
         while (word.typeEquals("COMMA")) {
             getWord(); // ,
             analyseConstDef(); // ConstDef
