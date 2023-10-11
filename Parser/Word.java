@@ -55,10 +55,9 @@ public class Word {
         return type.equals("LPARENT")
                 || type.equals("IDENFR")
                 || type.equals("INTCON")
-                || type.equals("STRCON")
-                || type.equals("NOT")
                 || type.equals("PLUS")
-                || type.equals("MINU");
+                || type.equals("MINU")
+                || type.equals("NOT");
     }
 
     public boolean typeOfUnary() {

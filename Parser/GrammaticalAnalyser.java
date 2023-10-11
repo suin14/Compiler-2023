@@ -300,7 +300,7 @@ public class GrammaticalAnalyser {
             }
             getWord(); // ;
             word = getNextWord();
-            if (word.typeEquals("COND")) {
+            if (word.typeSymbolizeExp()) {
                 analyseCond(); // Cond
             }
             getWord(); // ;
