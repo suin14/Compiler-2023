@@ -71,14 +71,10 @@ public class GrammaticalAnalyser {
 
     private void analyseConstDecl() { // ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';'
         getWord(); // const
-        getWord();
-        if (currentWord.typeEquals("INTTK")) {
-            analyseBType(); // Btype
-        } else {
-            error();
-        }
-        analyseConstDef(); // ConstDef
         Word word = getNextWord();
+        analyseBType(); // Btype
+        analyseConstDef(); // ConstDef
+        word = getNextWord();
         while (word.typeEquals("COMMA")) {
             getWord(); // ,
             analyseConstDef(); // ConstDef
@@ -89,7 +85,7 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseBType() { // BType → 'int'
-
+        getWord();
     }
 
     private void analyseConstDef() { // ConstDef → Ident { '[' ConstExp ']' } '=' ConstInitVal
