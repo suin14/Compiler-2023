@@ -1,6 +1,0 @@
-71066002
-a less than b
-c equal or bigger than d
-test ||
-test &&
-25
