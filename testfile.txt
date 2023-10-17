@@ -1,0 +1,17 @@
+const int CONV = 10;
+
+int func() {
+   return 20;
+}
+
+int main()
+{
+    int PI = CONV + func();
+      
+    repeat{
+        PI = PI + 1;
+    
+    }until(PI > 100);
+      
+    return 0;
+}
