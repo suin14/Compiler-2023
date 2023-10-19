@@ -1,10 +1,25 @@
 CONSTTK const
 INTTK int
-IDENFR CONV
+IDENFR coNst1
 ASSIGN =
-INTCON 10
+INTCON 1
 <Number>
 <PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+<ConstExp>
+<ConstInitVal>
+<ConstDef>
+COMMA ,
+IDENFR const2
+ASSIGN =
+MINU -
+<UnaryOp>
+INTCON 100
+<Number>
+<PrimaryExp>
+<UnaryExp>
 <UnaryExp>
 <MulExp>
 <AddExp>
@@ -15,13 +30,28 @@ SEMICN ;
 <ConstDecl>
 INTTK int
 <FuncType>
-IDENFR func
+IDENFR gets1
 LPARENT (
+INTTK int
+IDENFR var1
+<FuncFParam>
+COMMA ,
+INTTK int
+IDENFR var2
+<FuncFParam>
+<FuncFParams>
 RPARENT )
 LBRACE {
 RETURNTK return
-INTCON 20
-<Number>
+IDENFR var1
+<LVal>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+PLUS +
+IDENFR var2
+<LVal>
 <PrimaryExp>
 <UnaryExp>
 <MulExp>
@@ -37,72 +67,33 @@ MAINTK main
 LPARENT (
 RPARENT )
 LBRACE {
-INTTK int
-IDENFR PI
-ASSIGN =
-IDENFR CONV
-<LVal>
+PRINTFTK printf
+LPARENT (
+STRCON "%d"
+COMMA ,
+IDENFR gets1
+LPARENT (
+INTCON 10
+<Number>
 <PrimaryExp>
 <UnaryExp>
 <MulExp>
 <AddExp>
-PLUS +
-IDENFR func
-LPARENT (
+<Exp>
+COMMA ,
+INTCON 20
+<Number>
+<PrimaryExp>
+<UnaryExp>
+<MulExp>
+<AddExp>
+<Exp>
+<FuncRParams>
 RPARENT )
 <UnaryExp>
 <MulExp>
 <AddExp>
 <Exp>
-<InitVal>
-<VarDef>
-SEMICN ;
-<VarDecl>
-REPEATTK repeat
-LBRACE {
-IDENFR PI
-<LVal>
-ASSIGN =
-IDENFR PI
-<LVal>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-PLUS +
-INTCON 1
-<Number>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-<Exp>
-SEMICN ;
-<Stmt>
-RBRACE }
-<Block>
-<Stmt>
-UNTILTK until
-LPARENT (
-IDENFR PI
-<LVal>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-<RelExp>
-GRE >
-INTCON 100
-<Number>
-<PrimaryExp>
-<UnaryExp>
-<MulExp>
-<AddExp>
-<RelExp>
-<EqExp>
-<LAndExp>
-<LOrExp>
-<Cond>
 RPARENT )
 SEMICN ;
 <Stmt>
