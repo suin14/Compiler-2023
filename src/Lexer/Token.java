@@ -61,6 +61,30 @@ public class Token {
                 || type.equals("NOT");
     }
 
+    public boolean checkTypeStmt() {
+        return type.equals("IFTK")
+                || type.equals("ELSETK")
+                || type.equals("FORTK")
+                || type.equals("BREAKTK")
+                || type.equals("CONTINUETK")
+                || type.equals("RETURNTK")
+                || type.equals("PRINTFTK")
+                || type.equals("SEMICN");
+    }
+
+    public boolean checkNotInExp() {
+        return type.equals("CONSTTK")
+                || type.equals("INTTK")
+                || type.equals("BREAKTK")
+                || type.equals("CONTINUETK")
+                || type.equals("IFTK")
+                || type.equals("ELSETK")
+                || type.equals("FORTK")
+                || type.equals("GETINTTK")
+                || type.equals("PRINTFTK")
+                || type.equals("RETURNTK");
+    }
+
     public String getType() {
         return type;
     }
@@ -68,5 +92,57 @@ public class Token {
     public int getline() {
         return line;
     }
+
+    public String getContent() {
+        return content;
+    }
+
+    public int cntFormat() {
+        int cnt = 0;
+        for (int i = 0; i < content.length(); i++) {
+            if (i + 1 < content.length()) {
+                char current = content.charAt(i);
+                char currentNext = content.charAt(i + 1);
+                if (isPercentD(current, currentNext)) {
+                    cnt++;
+                }
+            }
+        }
+        return cnt;
+    }
+
+    public boolean checkFormat() {
+        int len = content.length();
+        for (int i = 0; i < len - 1; i++) {
+            char current = content.charAt(i);
+            char currentNext = content.charAt(i + 1);
+            if (!isValidCharacter(current)) {
+                if (isPercentD(current, currentNext)) {
+                    continue;
+                }
+                return true;
+            } else if (isBackslashWithoutNewline(current, currentNext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 检查字符是否为有效字符
+    private boolean isValidCharacter(char c) {
+        return (c == 32 || c == 33 || (c >= 40 && c <= 126));
+    }
+
+    // 检查是否是 "%d"
+    private boolean isPercentD(char c1, char c2) {
+        return (c1 == '%' && c2 == 'd');
+    }
+
+    // 检查反斜杠是否后面不是换行符
+    private boolean isBackslashWithoutNewline(char c1, char c2) {
+        return (c1 == '\\' && c2 != 'n');
+    }
+
+
 }
 

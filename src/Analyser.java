@@ -9,7 +9,7 @@ public class Analyser {
 
     public Analyser() throws IOException {
         lexicalAnalyser = new LexicalAnalyser();
-        grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getWords());
-        grammaticalAnalyser.printWords(new FileProcessor("testfile.txt","output.txt").getWriter());
+        grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());
+        grammaticalAnalyser.printError(new FileProcessor("testfile.txt","error.txt").getWriter());
     }
 }

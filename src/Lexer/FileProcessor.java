@@ -7,6 +7,7 @@ import java.util.StringJoiner;
 public class FileProcessor {
     private String code;
     private FileWriter writer;
+    private FileWriter errorWriter;
 
     public FileProcessor(String inputFile, String outputFile) throws IOException {
         code = transferToCode(inputFile);
@@ -33,5 +34,9 @@ public class FileProcessor {
 
     public FileWriter getWriter() {
         return writer;
+    }
+
+    public FileWriter getError() {
+        return errorWriter;
     }
 }

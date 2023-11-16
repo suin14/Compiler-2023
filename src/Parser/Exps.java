@@ -5,11 +5,11 @@ import java.util.ArrayList;
 
 public class Exps {
     private ArrayList<ArrayList<Token>> tokens;
-    private ArrayList<Token> symbols;
+    private ArrayList<Token> symboltable;
 
-    public Exps(ArrayList<ArrayList<Token>> tokens, ArrayList<Token> symbols) {
+    public Exps(ArrayList<ArrayList<Token>> tokens, ArrayList<Token> symboltable) {
         this.tokens = tokens;
-        this.symbols = symbols;
+        this.symboltable = symboltable;
     }
 
     public ArrayList<ArrayList<Token>> getTokens() {
@@ -17,7 +17,7 @@ public class Exps {
     }
 
     public ArrayList<Token> getSymbols() {
-        return symbols;
+        return symboltable;
     }
 
 }

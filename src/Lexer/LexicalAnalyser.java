@@ -7,12 +7,12 @@ import java.util.ArrayList;
 
 public class LexicalAnalyser {
     private String code;
-    private int line = 0;    // 行数，方便以后输出报错信息
+    private int line = 1; // 用于报错行数
     private int index = 0;
     private ArrayList<Token> token = new ArrayList<>();
 
     public LexicalAnalyser() throws IOException {
-        code = new FileProcessor("testfile.txt","output.txt").getCode();
+        code = new FileProcessor("testfile.txt","error.txt").getCode();
         analyse();
     }
 
@@ -163,17 +163,16 @@ public class LexicalAnalyser {
     private void analyseDigit(char pre) {
         StringBuilder builder = new StringBuilder(String.valueOf(pre));
         Character current;
-
         while (Character.isDigit(current = getChar())) {
             builder.append(current);
         }
-
         backup();
         token.add(new Token("INTCON", builder.toString(), line));
     }
 
     private void analyseLetter(char pre) {
-        StringBuilder builder = new StringBuilder("" + pre);
+        // StringBuilder builder = new StringBuilder("" + pre);
+        StringBuilder builder = new StringBuilder(String.valueOf(pre));
         Character current = null;
         while ((current = getChar()) != null) {
             if (Character.isLetter(current) || current == '_' || Character.isDigit(current)) {
@@ -190,7 +189,7 @@ public class LexicalAnalyser {
         }
     }
 
-    public void printWords(FileWriter writer) {
+    public void printWords(FileWriter writer) throws IOException {
         try (BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
             for (Token word : token) {
                 bufferedWriter.write(word.toString());
@@ -201,7 +200,7 @@ public class LexicalAnalyser {
         }
     }
 
-    public ArrayList<Token> getWords() {
+    public ArrayList<Token> getTokens() {
         return token;
     }
 }
