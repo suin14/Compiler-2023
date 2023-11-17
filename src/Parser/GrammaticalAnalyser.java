@@ -148,7 +148,7 @@ public class GrammaticalAnalyser {
         getToken();
     }
 
-    // 函数名或者变量名在当前作用域下重复定义。
+//     函数名或者变量名在当前作用域下重复定义。
     private boolean checkSymbolInArea(Token token) {
         return symboltable.get(area).findSymbol(token);
     }
@@ -358,7 +358,7 @@ public class GrammaticalAnalyser {
         getToken(); // Btype
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)) {
+        if (checkSymbolInArea(current)) {
             error("b"); // 名字重定义
         }
         Token nextToken = getNext();
