@@ -1,11 +1,15 @@
-const int const1 = 1, const2 = -100;
-int change1;
-int gets1(int var1,int var2){
-   const1 = 999;
-   change1 = var1 + var2          return (change1);
+int f1(int x){
+    return x;
 }
-int main(){
-   change1 = 10;
-   printf("Hello World$");
-   return 0;
+
+void f2(int x[])
+{
+    return;
+}
+
+int main() {
+    int arr[2][2];
+    f2(1);
+    f1(f2(arr[0]));
+    return 0;
 }

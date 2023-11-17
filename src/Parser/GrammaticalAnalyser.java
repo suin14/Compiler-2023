@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class GrammaticalAnalyser {
     private ArrayList<Token> tokens;
-    private int index = 0;
+    private int index;
     private Token current;
     private ArrayList<String> grammar;
 
@@ -21,7 +21,7 @@ public class GrammaticalAnalyser {
     private ArrayList<Errors> errors = new ArrayList<>();
     private int area = -1;
     private boolean needReturn = false;
-    private int whileFlag = 0;
+    private int forFlag = 0;
 
     public GrammaticalAnalyser(ArrayList<Token> tokens) {
         this.tokens = tokens;
@@ -42,6 +42,12 @@ public class GrammaticalAnalyser {
     }
 
     private Token getNext() {
+        // 检查列表是否为空或者索引是否越界
+        if (index >= tokens.size() || index < 0) {
+            // 处理索引越界的情况，比如抛出异常或者返回默认值
+            // 这里简单返回 null，你可以根据实际情况选择适当的处理方式
+            return null;
+        }
         return tokens.get(index);
     }
 
@@ -55,23 +61,52 @@ public class GrammaticalAnalyser {
         area--;
     }
 
-    private void analyseCompUnit() { // CompUnit → {Decl} {FuncDef} MainFuncDef
+//    private void analyseCompUnit() { // CompUnit → {Decl} {FuncDef} MainFuncDef
+//        addArea();
+//        Token nextToken = getNext();
+//        while (nextToken.typeIs("CONSTTK") || (nextToken.typeIs("INTTK") && tokens.get(index + 1).typeIs("IDENFR")
+//                && !tokens.get(index + 2).typeIs("LPARENT"))) { // {Decl}
+//            analyseDecl();
+//            nextToken = getNext();
+//        }
+//        while (nextToken.typeIs("VOIDTK") || ((nextToken.typeIs("INTTK") && !tokens.get(index + 1).typeIs("MAINTK")))) { // {FuncDef}
+//            analyseFuncDef();
+//            nextToken = getNext();
+//        }
+//        if (nextToken.typeIs("INTTK") && tokens.get(index + 1).typeIs("MAINTK")) { // MainFuncDef
+//            analyseMainFuncDef();
+//        } else {
+//            error();
+//        }
+//        removeArea();
+//        grammar.add("<CompUnit>"); // 编译单元
+//    }
+    private void analyseCompUnit() {
         addArea();
         Token nextToken = getNext();
-        while (nextToken.typeIs("CONSTTK") || (nextToken.typeIs("INTTK") && tokens.get(index + 1).typeIs("IDENFR")
-                && !tokens.get(index + 2).typeIs("LPARENT"))) { // {Decl}
+
+        // 修复边界检查问题
+        while (index < tokens.size() && (nextToken.typeIs("CONSTTK") || (nextToken.typeIs("INTTK")
+                && index + 1 < tokens.size() && tokens.get(index + 1).typeIs("IDENFR")
+                && index + 2 < tokens.size() && !tokens.get(index + 2).typeIs("LPARENT")))) {
             analyseDecl();
             nextToken = getNext();
         }
-        while (nextToken.typeIs("VOIDTK") || ((nextToken.typeIs("INTTK") && !tokens.get(index + 1).typeIs("MAINTK")))) { // {FuncDef}
+
+        // 修复边界检查问题
+        while (index < tokens.size() && (nextToken.typeIs("VOIDTK") || ((nextToken.typeIs("INTTK")
+                && index + 1 < tokens.size() && !tokens.get(index + 1).typeIs("MAINTK"))))) {
             analyseFuncDef();
             nextToken = getNext();
         }
-        if (nextToken.typeIs("INTTK") && tokens.get(index + 1).typeIs("MAINTK")) { // MainFuncDef
+
+        // 修复边界检查问题
+        if (index < tokens.size() && nextToken.typeIs("INTTK") && index + 1 < tokens.size() && tokens.get(index + 1).typeIs("MAINTK")) {
             analyseMainFuncDef();
         } else {
             error();
         }
+
         removeArea();
         grammar.add("<CompUnit>"); // 编译单元
     }
@@ -127,16 +162,6 @@ public class GrammaticalAnalyser {
         return false;
     }
 
-
-//    private void checkBrack() {
-//        Token token = getNext();
-//        if (token.typeIs("RBRACK")) { // ]
-//            getToken(); //]
-//        } else {
-//            error("k");
-//        }
-//    }
-
     private void addSymbol(Token token, String node, int intType) {
         symboltable.get(area).addSymbol(node, intType, token);
     }
@@ -144,7 +169,7 @@ public class GrammaticalAnalyser {
     private void analyseConstDef() { // ConstDef → Ident { '[' ConstExp ']' } '=' ConstInitVal
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)){
+        if (checkSymbolInArea(current)){
             error("b"); // 名字重定义
         }
         int intType = 0;
@@ -154,13 +179,13 @@ public class GrammaticalAnalyser {
             getToken(); // [
             analyseConstExp(getExp()); // ConstExp
             getToken(); // ]
-            //checkBrack();
+            //check RBrack
             if (!current.typeIs("RBRACK")) {
                 error("k");
             }
             nextToken = getNext();
         }
-        addSymbol(ident,"const",intType);
+        addSymbol(ident,"const", intType);
         getToken(); // =
         analyseConstInitVal(); // ConstInitVal
         grammar.add("<ConstDef>"); // 定义数组
@@ -207,7 +232,7 @@ public class GrammaticalAnalyser {
     private void analyseVarDef() { // VarDef → Ident { '[' ConstExp ']' } | Ident { '[' ConstExp ']' } '=' InitVal
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)) {
+        if (checkSymbolInArea(current)) {
             error("b"); // 名字重定义
         }
         int intType = 0;
@@ -253,7 +278,7 @@ public class GrammaticalAnalyser {
 
     private void analyseFuncDef() { // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
         //analyseFuncType(); // FuncType
-        Function function = null;
+        Function function;
         ArrayList<Integer> params = new ArrayList<>();
         String returnType = analyseFuncType();
         getToken(); // Ident
@@ -268,7 +293,7 @@ public class GrammaticalAnalyser {
             params = analyseFuncFParams();
         }
         if (!getNext().typeIs("RPARENT")) {
-            error("j"); //缺少右小括号’)’
+            error("j"); // 缺少右小括号’)’
         } else {
             getToken(); //)
         }
@@ -302,7 +327,7 @@ public class GrammaticalAnalyser {
         needReturn = true;
         boolean isReturn = analyseBlock(false);
         if (needReturn && !isReturn) {
-            error("g");
+            error("g"); // 有返回值的函数缺少return语句
         }
         grammar.add("<MainFuncDef>"); // main函数定义
     }
@@ -316,6 +341,7 @@ public class GrammaticalAnalyser {
     private ArrayList<Integer> analyseFuncFParams() { // FuncFParams → FuncFParam { ',' FuncFParam }
         ArrayList<Integer> params = new ArrayList<>();
         int paramType = analyseFuncFParam(); // FuncFParam
+        params.add(paramType);
         Token nextToken = getNext();
         while (nextToken.typeIs("COMMA")) {
             getToken(); // ,
@@ -408,18 +434,13 @@ public class GrammaticalAnalyser {
     // 检查是不是const
     private void checkConst(Token token) {
         if (isConst(token)) {
-            error("h", token.getline()); //不能改变常量的值
+            error("h", token.getline()); // 不能改变常量的值
         }
     }
+
     private boolean isConst(Token token) {
-        for (SymbolTable symbol : symboltable.values()) {
-            if (symbol.findSymbol(token)) {
-                if (symbol.isConst(token)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return symboltable.values().stream()
+                .anyMatch(symbol -> symbol.findSymbol(token) && symbol.isConst(token));
     }
 
     private boolean analyseStmt() {
@@ -470,11 +491,12 @@ public class GrammaticalAnalyser {
             }
         } else if (nextToken.typeIs("FORTK")) { // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
             getToken(); // for
+            forFlag++;
             getToken(); // (
             nextToken = getNext();
             if (nextToken.typeIs("IDENFR")) { // ForStmt
                 analyseForStmt();
-            }  //TODO
+            }
             getToken(); // ;
             nextToken = getNext();
             if (nextToken.typeSymbolizeExp()) { // Cond
@@ -486,22 +508,23 @@ public class GrammaticalAnalyser {
                 analyseForStmt();
             }
             if (!getNext().typeIs("RPARENT")) {
-                error("j"); //缺少右小括号’)’
+                error("j"); // 缺少右小括号’)’
             } else {
                 getToken(); //)
             }
+            forFlag--;
             analyseStmt(); // Stmt
         } else if (nextToken.typeIs("BREAKTK")) { // 'break' ';'
             getToken(); // break
             //getToken(); // ;
-            if (whileFlag == 0) {
+            if (forFlag == 0) {
                 error("m"); // 在非循环块中使用break和continue语句
             }
             checkSemicn(); //;
         } else if (nextToken.typeIs("CONTINUETK")) { // 'continue' ';'
             getToken(); // continue
             //getToken(); // ;
-            if (whileFlag == 0) {
+            if (forFlag == 0) {
                 error("m"); // 在非循环块中使用break和continue语句
             }
             checkSemicn(); //;
@@ -552,10 +575,11 @@ public class GrammaticalAnalyser {
     private void analyseForStmt() { // ForStmt → LVal '=' Exp
         ArrayList<Token> exp = getExp();
         analyseLVal(exp); // LVal
+        checkConst(exp.get(0)); // 检查左值是否是常量
         getToken(); // =
         analyseExp(getExp()); // Exp
         grammar.add("<ForStmt>");
-    } // TODO
+    }
 
     private int analyseExp(ArrayList<Token> exp) { // Exp → AddExp
         int intType = analyseAddExp(exp);
@@ -570,12 +594,11 @@ public class GrammaticalAnalyser {
 
     private int analyseLVal(ArrayList<Token> exp) { // LVal → Ident {'[' Exp ']'}
         int intType = 0;
-        //grammar.add(exp.get(0).toString()); // Ident
         Token ident = exp.get(0);
         if (!checkSymbol(ident)) {
             error("c", ident.getline()); //未定义的名字
         }
-        grammar.add(ident.toString());
+        grammar.add(ident.toString()); // Ident
         if (exp.size() > 1) {
             ArrayList<Token> exp1 = new ArrayList<>();
             int flag = 0;
@@ -642,6 +665,10 @@ public class GrammaticalAnalyser {
     private int analyseUnaryExp(ArrayList<Token> exp) { // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')'
                                                         // | UnaryOp UnaryExp
         int intType = 0;
+        if (exp.isEmpty()) {
+            // 对于空列表的处理，可以根据需要抛出异常、返回默认值，或者执行其他逻辑
+            return intType; // 这里假设返回默认值 0，你可以根据实际情况返回合适的值或执行逻辑
+        }
         Token nextToken = exp.get(0);
         if (nextToken.typeIs("PLUS") || nextToken.typeIs("MINU") || nextToken.typeIs("NOT")) { // UnaryOp UnaryExp
             analyseUnaryOp(exp.get(0));
@@ -649,7 +676,7 @@ public class GrammaticalAnalyser {
         } else if (exp.size() == 1) {
             intType = analysePrimaryExp(exp); // PrimaryExp
         } else {
-            if (exp.get(0).typeIs("IDENFR") && exp.get(1).typeIs("LPARENT")) { // Ident (
+            if (exp.get(0).typeIs("IDENFR") && exp.get(1).typeIs("LPARENT")) { // Ident '(' [FuncRParams] ')'
                 Token ident = exp.get(0);
                 ArrayList<Integer> params = null;
                 if (!checkFunction(ident)) {
@@ -681,14 +708,6 @@ public class GrammaticalAnalyser {
         grammar.add("<UnaryExp>");
         return intType;
     }
-    // 检查函数参数
-    private void checkParams(Token ident, ArrayList<Integer> params) {
-        if (params != null) {
-            if (params.size() != 0) {
-                error("d", ident.getline()); // 函数参数个数不匹配
-            }
-        }
-    }
 
     private boolean checkFunction(Token token) {
         return functions.containsKey(token.getContent());
@@ -707,31 +726,37 @@ public class GrammaticalAnalyser {
     private void analyseFuncRParams(Token ident, ArrayList<Token> exp, ArrayList<Integer> params) { // FuncRParams → Exp { ',' Exp }
         ArrayList<Integer> rparams = new ArrayList<>();
         Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("COMMA")));
-        int j = 0;
         for (ArrayList<Token> exp1 : exps.getTokens()) {
-            int intType = analyseExp(exp1);// Exp
+            int intType = analyseExp(exp1); // Exp
             rparams.add(intType);
-            if (j < exps.getSymbols().size()) {
-                grammar.add(exps.getSymbols().get(j++).toString());
+            if (!exps.getSymbols().isEmpty()) {
+                grammar.add(exps.getSymbols().remove(0).toString());
             }
         }
-        if (params != null) {
-            checkRParams(ident, params, rparams);
-        }
+        checkParamsType(ident, params, rparams); // 检查参数匹配性
         grammar.add("<FuncRParams>");
     }
 
-    private void checkRParams(Token ident, ArrayList<Integer> params, ArrayList<Integer> rparams) {
+    private void checkParamsType(Token ident, ArrayList<Integer> params, ArrayList<Integer> rparams) {
         if (params.size() != rparams.size()) {
-            error("d", ident.getline()); // 函数参数个数不匹配
+            error("d", ident.getline());
         } else {
-            for (int i = 0; i < params.size(); i++) {
+            for (int i = 0; i < rparams.size(); i++) {
                 if (!params.get(i).equals(rparams.get(i))) {
-                    error("e", ident.getline()); // 函数参数类型不匹配
+                    error("e", ident.getline());
                 }
             }
         }
-    }   
+    }
+
+    // 检查函数参数
+    private void checkParams(Token ident, ArrayList<Integer> params) {
+        if (params != null) {
+            if (params.size() != 0) {
+                error("d", ident.getline()); // 函数参数个数不匹配
+            }
+        }
+    }
 
     private Exps divideExp(ArrayList<Token> exp, ArrayList<String> symbol) {
         ArrayList<ArrayList<Token>> exps = new ArrayList<>();
@@ -934,8 +959,7 @@ public class GrammaticalAnalyser {
     }
 
     private void error(String type) {
-        errors.add(new Errors(current.getline(), type));
-        System.out.println(current.getline() + " " + type);
+        error(type, current.getline());
     }
 
     private void error(String type, int line) {
@@ -965,18 +989,18 @@ public class GrammaticalAnalyser {
                 .orElse(null);
     }
 
+    // 使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
+    // 同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
     public void printError(FileWriter writer) throws IOException {
-        errors.sort(new Comparator<Errors>() {
-            @Override
-            public int compare(Errors e1, Errors e2) {
-                return e1.getline() - e2.getline();
+        errors.sort(Comparator.comparingInt(Errors::getline));
+        try {
+            for (Errors error : errors) {
+                writer.write(error + "\n");
             }
-        });
-        for (Errors error : errors) {
-            writer.write(error + "\n");
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
         }
-        writer.flush();
-        writer.close();
     }
-
 }
