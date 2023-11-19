@@ -26,4 +26,3 @@ public class Symbol {
         return content;
     }
 }
-

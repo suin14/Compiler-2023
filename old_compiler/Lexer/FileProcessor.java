@@ -5,12 +5,12 @@ import java.util.Scanner;
 import java.util.StringJoiner;
 
 public class FileProcessor {
-    private final String code;
-    private final FileWriter writer;
+    private String code;
+    private FileWriter writer;
 
     public FileProcessor(String inputFile, String outputFile) throws IOException {
         code = transferToCode(inputFile);
-        writer = new FileWriter(outputFile);
+        writer = new FileWriter(new File(outputFile));
     }
 
     public static String transferToCode (String filename) throws IOException {

@@ -1,16 +1,18 @@
 package Lexer;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class LexicalAnalyser {
-    private final String code;
-    private int line = 1; // 用于报错行数
+    private String code;
+    private int line = 0;    // 行数，方便以后输出报错信息
     private int index = 0;
-    private final ArrayList<Token> token = new ArrayList<>();
+    private ArrayList<Token> token = new ArrayList<>();
 
     public LexicalAnalyser() throws IOException {
-        code = new FileProcessor("testfile.txt","error.txt").getCode();
+        code = new FileProcessor("testfile.txt","output.txt").getCode();
         analyse();
     }
 
@@ -36,24 +38,51 @@ public class LexicalAnalyser {
         }
     }
 
-    private void analyse() {
-        Character current;
+    private void analyse() throws IOException {
+        Character current = null;
         while ((current = getChar()) != null) {
             switch (current) {
-                case ' ', '\r', '\t' -> {
-                }
-                case '+', '-', '*', '%', '(', ')', '[', ']', '{', '}', ',', ';' -> token.add(new Token(current, line));
-                case '/' -> analyseSlash();
-                case '=', '<', '>', '!' -> analyseRelation(current);
-                case '"' -> analyseQuot();
-                case '&', '|' -> analyseLogic(current);
-                default -> {
+                case ' ':
+                case '\r':
+                case '\t':
+                    continue;
+                case '+':
+                case '-':
+                case '*':
+                case '%':
+                case '(':
+                case ')':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case ',':
+                case ';':
+                    token.add(new Token(current, line));
+                    break;
+                case '/':
+                    analyseSlash();
+                    break;
+                case '=':
+                case '<':
+                case '>':
+                case '!':
+                    analyseRelation(current);
+                    break;
+                case '"':
+                    analyseQuot();
+                    break;
+                case '&':
+                case '|':
+                    analyseLogic(current);
+                    break;
+                default:
                     if (Character.isDigit(current)) {
                         analyseDigit(current);
                     } else if (Character.isLetter(current) || current == '_') {
                         analyseLetter(current);
                     }
-                }
+                    break;
             }
         }
     }
@@ -91,7 +120,7 @@ public class LexicalAnalyser {
 
         if (next == '=') {
             // 处理关系运算符：==, <=, >=, !=
-            token.add(new Token(current + "=", line));
+            token.add(new Token(String.valueOf(current) + "=", line));
         } else {
             // 处理单目运算符：=, <, >, !
             token.add(new Token(String.valueOf(current), line));
@@ -101,11 +130,11 @@ public class LexicalAnalyser {
 
 
     private void analyseQuot() {
-        Character current;
-        StringBuilder buffer = new StringBuilder(); //保存读取到的内容
+        Character current = null;
+        StringBuffer buffer = new StringBuffer(""); //保存读取到的内容
         while ((current = getChar()) != null) {
             if (current == '"') { // 寻找到结束的‘"’
-                token.add(new Token(String.valueOf(Word.STRCON), "\"" + buffer + "\"",line));
+                token.add(new Token("STRCON", "\"" + buffer + "\"",line));
                 return;
             } else {
                 buffer.append(current);
@@ -134,16 +163,18 @@ public class LexicalAnalyser {
     private void analyseDigit(char pre) {
         StringBuilder builder = new StringBuilder(String.valueOf(pre));
         Character current;
+
         while (Character.isDigit(current = getChar())) {
             builder.append(current);
         }
+
         backup();
-        token.add(new Token(String.valueOf(Word.INTCON), builder.toString(), line));
+        token.add(new Token("INTCON", builder.toString(), line));
     }
 
     private void analyseLetter(char pre) {
-        StringBuilder builder = new StringBuilder(String.valueOf(pre));
-        Character current;
+        StringBuilder builder = new StringBuilder("" + pre);
+        Character current = null;
         while ((current = getChar()) != null) {
             if (Character.isLetter(current) || current == '_' || Character.isDigit(current)) {
                 builder.append(current);
@@ -152,14 +183,25 @@ public class LexicalAnalyser {
                 if (new NodeMap().isNode(builder.toString())) {   // 先比对是不是关键字
                     token.add(new Token(builder.toString(),line));
                 } else {
-                    token.add(new Token((String.valueOf(Word.IDENFR)), builder.toString(),line));  // 变量名
+                    token.add(new Token("IDENFR", builder.toString(),line));  // 变量名
                 }
                 return;
             }
         }
     }
 
-    public ArrayList<Token> getTokens() {
+    public void printWords(FileWriter writer) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+            for (Token word : token) {
+                bufferedWriter.write(word.toString());
+                bufferedWriter.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<Token> getWords() {
         return token;
     }
 }

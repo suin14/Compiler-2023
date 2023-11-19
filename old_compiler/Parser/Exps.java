@@ -4,12 +4,12 @@ import Lexer.Token;
 import java.util.ArrayList;
 
 public class Exps {
-    private final ArrayList<ArrayList<Token>> tokens;
-    private final ArrayList<Token> symboltable;
+    private ArrayList<ArrayList<Token>> tokens;
+    private ArrayList<Token> symbols;
 
-    public Exps(ArrayList<ArrayList<Token>> tokens, ArrayList<Token> symboltable) {
+    public Exps(ArrayList<ArrayList<Token>> tokens, ArrayList<Token> symbols) {
         this.tokens = tokens;
-        this.symboltable = symboltable;
+        this.symbols = symbols;
     }
 
     public ArrayList<ArrayList<Token>> getTokens() {
@@ -17,7 +17,7 @@ public class Exps {
     }
 
     public ArrayList<Token> getSymbols() {
-        return symboltable;
+        return symbols;
     }
 
 }
