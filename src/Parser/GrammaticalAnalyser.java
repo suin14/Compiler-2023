@@ -252,7 +252,6 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseFuncDef() { // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
-        //analyseFuncType(); // FuncType
         int startIdx = index;
         Function function;
         ArrayList<Integer> params = new ArrayList<>();
@@ -261,9 +260,11 @@ public class GrammaticalAnalyser {
         if (functions.containsKey(current.getContent())) {
             error("b"); //名字重定义
         }
-        codes.add(new PCode(Operator.FUNC, current.getContent()));
+        PCode code = new PCode(Operator.FUNC, current.getContent());
+        codes.add(code);
         function = new Function(current, returnType);
         addArea();
+
         getToken(); // (
         Token nextToken = getNext();
         if (nextToken.typeIs(String.valueOf(Word.VOIDTK))||nextToken.typeIs(String.valueOf(Word.INTTK))) {
@@ -282,10 +283,9 @@ public class GrammaticalAnalyser {
             error("g");
         }
         removeArea();
-        //todo
+        code.setValue2(params.size());
         codes.add(new PCode(Operator.RET, 0));
         codes.add(new PCode(Operator.END_FUNC));
-
         grammar.add("<FuncDef>"); // 函数定义
     }
 

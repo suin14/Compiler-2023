@@ -204,7 +204,7 @@ public class Executor {
                 int n = (int) code.getValue2();
                 para.setDimension(n);
                 if (n == 2) {
-                    para.setDim2(pop());
+                    para.setDimensionValue(pop(), 2);
                 }
                 varTable.put((String) code.getValue1(), para);
                 nowArgsNum++;
@@ -227,10 +227,10 @@ public class Executor {
             }
             case CALL -> {
                 Func func = funcTable.get((String) code.getValue1());
-                retInfos.add(new RetInfo(eip, varTable, stack.size() - 1, func.getArgs(), func.getArgs(), nowArgsNum));
-                eip = func.getIndex();
+                retInfos.add(new RetInfo(eip, varTable, stack.size() - 1, func.args(), func.args(), nowArgsNum));
+                eip = func.index();
                 varTable = new HashMap<>();
-                callArgsNum = func.getArgs();
+                callArgsNum = func.args();
                 nowArgsNum = 0;
             }
             case RPARAM -> {
@@ -295,16 +295,16 @@ public class Executor {
                 if (n == 1) {
                     int i = pop();
                     if (var != null) {
-                        var.setDim1(i);
+                        var.setDimensionValue(i, 1);
                     }
                 }
                 if (n == 2) {
                     int j = pop(), i = pop();
                     if (var != null) {
-                        var.setDim1(i);
+                        var.setDimensionValue(i, 1);
                     }
                     if (var != null) {
-                        var.setDim2(j);
+                        var.setDimensionValue(j, 2);
                     }
                 }
             }
@@ -316,14 +316,14 @@ public class Executor {
                 }
                 if (n == 1) {
                     if (var != null) {
-                        for (int i = 0; i < var.getDim1(); i++) {
+                        for (int i = 0; i < var.getDimensionValue(1); i++) {
                             push(0);
                         }
                     }
                 }
                 if (n == 2) {
                     if (var != null) {
-                        for (int i = 0; i < var.getDim1() * var.getDim2(); i++) {
+                        for (int i = 0; i < var.getDimensionValue(1) * var.getDimensionValue(2); i++) {
                             push(0);
                         }
                     }
@@ -345,13 +345,13 @@ public class Executor {
             if (var.getDimension() == 1) {
                 address = var.getIndex() + i;
             } else {
-                address = var.getIndex() + var.getDim2() * i;
+                address = var.getIndex() + var.getDimensionValue(2) * i;
             }
         }
         if (n == 2) {
             int j = pop();
             int i = pop();
-            address = var.getIndex() + var.getDim2() * i + j;
+            address = var.getIndex() + var.getDimensionValue(2) * i + j;
         }
         return address;
     }

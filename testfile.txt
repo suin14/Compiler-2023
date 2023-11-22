@@ -1,11 +1,12 @@
-void pr(){
-
+int test() {
+    return 10;
 }
 
-int main()
-{
-    pr();
-    int a = 10;
-    printf("%d", a);
-    return 0;
+int main() {
+int a;
+int b = 10;
+a = test();
+int c = a + b;
+printf("%d", c);
+return 0;
 }
