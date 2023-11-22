@@ -1,9 +1,8 @@
 package Parser;
-import Lexer.Word;
-import Lexer.Token;
-import PCode.LabelGenerator;
+
+import Lexer.*;
+import PCode.*;
 import PCode.Operator.Operator;
-import PCode.PCode;
 import Symbol.*;
 import Error.*;
 
