@@ -1,12 +1,11 @@
-int test() {
-    return 10;
-}
+const int N=510,M=-520,KK=-1;
+const int NN = 55,MM = 2222;
+const int K = -24;
+const int a_3[2] = {4,5},a_4[2][2] = {{899,99},{1222,25555}};
+const int a_1[2]={1,2},a_2[1][1]={{2}};
 
-int main() {
-int a;
-int b = 10;
-a = test();
-int c = a + b;
-printf("%d", c);
-return 0;
+int main()
+{
+    printf("ok");
+    return 0;
 }

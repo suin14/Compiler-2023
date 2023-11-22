@@ -2,6 +2,7 @@ package PCode;
 
 import PCode.Operator.Operator;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -220,9 +221,9 @@ public class Executor {
                 callArgsNum = info.getNeedArgsNum();
                 nowArgsNum = info.getNowArgsNum();
                 if (n == 1) {
-                    stack.subList(info.getStackPtr() + 1 - info.getParaNum(), stack.size() - 1).clear();
+                    stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size() - 1).clear();
                 } else {
-                    stack.subList(info.getStackPtr() + 1 - info.getParaNum(), stack.size()).clear();
+                    stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size()).clear();
                 }
             }
             case CALL -> {
@@ -335,33 +336,39 @@ public class Executor {
     }
 
     private int getAddress(Var var, int intType) {
-        int address = 0;
-        int n = var.getDimension() - intType;
-        if (n == 0) {
-            address = var.getIndex();
+        int dimension = var.getDimension() - intType;
+        return switch (dimension) {
+            case 0 -> getAddressForDimensionZero(var);
+            case 1 -> getAddressForDimensionOne(var);
+            case 2 -> getAddressForDimensionTwo(var);
+            default -> throw new IllegalArgumentException("Invalid dimension: " + dimension);
+        };
+    }
+
+    private int getAddressForDimensionZero(Var var) {
+        return var.getIndex();
+    }
+
+    private int getAddressForDimensionOne(Var var) {
+        int i = pop();
+        if (var.getDimension() == 1) {
+            return var.getIndex() + i;
+        } else {
+            return var.getIndex() + var.getDimensionValue(2) * i;
         }
-        if (n == 1) {
-            int i = pop();
-            if (var.getDimension() == 1) {
-                address = var.getIndex() + i;
-            } else {
-                address = var.getIndex() + var.getDimensionValue(2) * i;
-            }
-        }
-        if (n == 2) {
-            int j = pop();
-            int i = pop();
-            address = var.getIndex() + var.getDimensionValue(2) * i + j;
-        }
-        return address;
+    }
+
+    private int getAddressForDimensionTwo(Var var) {
+        int j = pop();
+        int i = pop();
+        return var.getIndex() + var.getDimensionValue(2) * i + j;
     }
 
     public void print() throws IOException {
-        for (String s : prints) {
-            writer.write(s);
-
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("pcoderesult.txt"))) {
+            for (String s : prints) {
+                writer.write(s);
+            }
         }
-        writer.flush();
-        writer.close();
     }
 }

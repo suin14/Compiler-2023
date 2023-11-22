@@ -153,7 +153,6 @@ public class GrammaticalAnalyser {
             }
             nextToken = getNext();
         }
-        // todo
         if (intType != 0) { // 数组类型
             codes.add(new PCode(Operator.DIMVAR, areaID + "_" + ident.getContent(), intType));
         }
@@ -216,7 +215,6 @@ public class GrammaticalAnalyser {
             }
             nextToken = getNext();
         }
-        // todo
         if (intType != 0) {
             codes.add(new PCode(Operator.DIMVAR, areaID + "_" + ident.getContent(), intType));
         }
@@ -252,7 +250,6 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseFuncDef() { // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
-        int startIdx = index;
         Function function;
         ArrayList<Integer> params = new ArrayList<>();
         String returnType = analyseFuncType();
@@ -416,11 +413,7 @@ public class GrammaticalAnalyser {
                 int intType = analyseLVal(exp); // LVal
                 checkConst(nextToken);
                 codes.add(new PCode(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType));
-                // todo
-//                if (isConst(nextToken)) {
-//                    error("h", nextToken.getline());
-//
-//                }
+                checkConst(nextToken);
                 getToken(); // =
                 if (getNext().typeIs(String.valueOf(Word.GETINTTK))) { // 'getint''('')'';'
                     getToken(); // getint
@@ -448,13 +441,12 @@ public class GrammaticalAnalyser {
             analyseBlock(false);
         } else if (nextToken.typeIs(String.valueOf(Word.IFTK))) { // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
             ifLabels.add(new HashMap<>());
-            ifLabels.get(ifLabels.size() - 1).put("if", labelGenerator.getLabel("if"));
-            ifLabels.get(ifLabels.size() - 1).put("else", labelGenerator.getLabel("else"));
-            ifLabels.get(ifLabels.size() - 1).put("if_end", labelGenerator.getLabel("if_end"));
-            ifLabels.get(ifLabels.size() - 1).put("if_block", labelGenerator.getLabel("if_block"));
+            ifLabels.get(ifLabels.size() - 1).put("if", labelGenerator.generateLabel("if"));
+            ifLabels.get(ifLabels.size() - 1).put("else", labelGenerator.generateLabel("else"));
+            ifLabels.get(ifLabels.size() - 1).put("if_end", labelGenerator.generateLabel("if_end"));
+            ifLabels.get(ifLabels.size() - 1).put("if_block", labelGenerator.generateLabel("if_block"));
             codes.add(new PCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if")));
 
-            //addIfLabelCode("if");
             getToken(); // if
             getToken(); // (
             analyseCond(String.valueOf(Word.IFTK)); // Cond
@@ -476,14 +468,11 @@ public class GrammaticalAnalyser {
             codes.add(new PCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if_end")));
             ifLabels.remove(ifLabels.size() - 1);
         } else if (nextToken.typeIs(String.valueOf(Word.FORTK))) { // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
-            // todo
             forLabels.add(new HashMap<>());
-            forLabels.get(forLabels.size() - 1).put("if", labelGenerator.getLabel("if"));
-            forLabels.get(forLabels.size() - 1).put("else", labelGenerator.getLabel("else"));
-            forLabels.get(forLabels.size() - 1).put("if_end", labelGenerator.getLabel("if_end"));
-            forLabels.get(forLabels.size() - 1).put("if_block", labelGenerator.getLabel("if_block"));
-            codes.add(new PCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("if")));
-            //addForLabelCode("for");
+            forLabels.get(forLabels.size() - 1).put("for", labelGenerator.generateLabel("for"));
+            forLabels.get(forLabels.size() - 1).put("for_end", labelGenerator.generateLabel("for_end"));
+            forLabels.get(forLabels.size() - 1).put("for_block", labelGenerator.generateLabel("for_block"));
+            codes.add(new PCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for")));
 
             getToken(); // for
             forFlag++;
@@ -886,13 +875,12 @@ public class GrammaticalAnalyser {
                 codes.add(new PCode(Operator.AND));
             }
             if (exps.getTokens().size() > 1 && i != exps.getTokens().size() - 1) {
-                if (from.equals(Word.IFTK)) {
+                if (from.equals(String.valueOf(Word.IFTK))) {
                     codes.add(new PCode(Operator.JZ, label));
                 } else {
                     codes.add(new PCode(Operator.JZ, label));
                 }
             }
-            // todo
             grammar.add("<LAndExp>");
             if (j < exps.getSymbols().size()) {
                 grammar.add(exps.getSymbols().get(j++).toString());
@@ -905,16 +893,16 @@ public class GrammaticalAnalyser {
         int j = 0;
         for (int i = 0; i < exps.getTokens().size(); i++) {
             ArrayList<Token> exp1 = exps.getTokens().get(i);
-            String label = labelGenerator.getLabel("cond_" + i);
+            String label = labelGenerator.generateLabel("cond_" + i);
             analyseLAndExp(exp1, from, label); // LAndExp
             codes.add(new PCode(Operator.LABEL, label));
             if (j > 0) {
                 codes.add(new PCode(Operator.OR));
             }
             if (exps.getTokens().size() > 1 && i != exps.getTokens().size() - 1) {
-                if (from.equals(Word.IFTK)) {
+                if (from.equals(String.valueOf(Word.IFTK))) {
                     codes.add(new PCode(Operator.JNZ, ifLabels.get(ifLabels.size() - 1).get("if_block")));
-                } else if(from.equals(Word.FORTK)){
+                } else if(from.equals(String.valueOf(Word.FORTK))){
                     codes.add(new PCode(Operator.JNZ, forLabels.get(forLabels.size() - 1).get("for_block")));
                 }
             }
@@ -1111,12 +1099,6 @@ public class GrammaticalAnalyser {
             if (writer != null) {
                 writer.close();
             }
-        }
-    }
-
-    public void printPCode() {
-        for (PCode code : codes) {
-            System.out.println(code);
         }
     }
 

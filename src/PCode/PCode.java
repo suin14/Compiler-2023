@@ -40,20 +40,24 @@ public class PCode {
 
     @Override
     public String toString() {
-        if (type.equals(Operator.LABEL)) {
-            return value1.toString() + ": ";
+        switch (type) {
+            case LABEL -> {
+                return value1.toString() + ": ";
+            }
+            case FUNC -> {
+                return "FUNC @" + value1.toString() + ":";
+            }
+            case CALL -> {
+                return "$" + value1.toString();
+            }
+            case PRINT -> {
+                return type + " " + value1;
+            }
+            default -> {
+                String a = value1 != null ? value1.toString() : "";
+                String b = value2 != null ? ", " + value2.toString() : "";
+                return type + " " + a + b;
+            }
         }
-        if (type.equals(Operator.FUNC)) {
-            return "FUNC @" + value1.toString() + ":";
-        }
-        if (type.equals(Operator.CALL)) {
-            return "$" + value1.toString();
-        }
-        if (type.equals(Operator.PRINT)) {
-            return type + " " + value1;
-        }
-        String a = value1 != null ? value1.toString() : "";
-        String b = value2 != null ? ", " + value2.toString() : "";
-        return type + " " + a + b;
     }
 }

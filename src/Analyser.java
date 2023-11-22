@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class Analyser {
-    private LexicalAnalyser lexicalAnalyser;
-    private GrammaticalAnalyser grammaticalAnalyser;
-    private Executor PCodeExecutor;
-    private FileProcessor fileProcessor;
-    private Scanner input;
+    private final LexicalAnalyser lexicalAnalyser;
+    private final GrammaticalAnalyser grammaticalAnalyser;
+    private final Executor PCodeExecutor;
+    private final FileProcessor fileProcessor;
+    private final Scanner input;
 
     public Analyser() throws IOException {
         File inputFile = new File("input.txt");
@@ -19,7 +19,7 @@ public class Analyser {
         fileProcessor = new FileProcessor("testfile.txt", "pcoderesult.txt");
         lexicalAnalyser = new LexicalAnalyser();
         grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());
-        //grammaticalAnalyser.printError(new FileProcessor("testfile.txt","error.txt").getWriter());
+        // grammaticalAnalyser.printError(new FileProcessor("testfile.txt","error.txt").getWriter());
         PCodeExecutor = new Executor(grammaticalAnalyser.getCodes(), fileProcessor.getWriter(), input);
         PCodeExecutor.run();
         PCodeExecutor.print();

@@ -10,36 +10,36 @@ public class RetInfo {
     private final int needArgsNum;
     private final int nowArgsNum;
 
-    public RetInfo(Integer eip, HashMap<String, Var> varTable, Integer stackPtr, Integer paramNum, Integer needArgsNum, Integer nowArgsNum) {
+    public RetInfo(int eip, HashMap<String, Var> varTable, int stackPtr, int paramNum, int needArgsNum, int nowArgsNum) {
         this.eip = eip;
-        this.varTable = varTable;
+        this.varTable = new HashMap<>(varTable);
         this.stackPtr = stackPtr;
         this.paramNum = paramNum;
         this.needArgsNum = needArgsNum;
         this.nowArgsNum = nowArgsNum;
     }
 
-    public Integer getEip() {
+    public int getEip() {
         return eip;
     }
 
     public HashMap<String, Var> getVarTable() {
-        return varTable;
+        return new HashMap<>(varTable);
     }
 
-    public Integer getStackPtr() {
+    public int getStackPtr() {
         return stackPtr;
     }
 
-    public Integer getParaNum() {
+    public int getParamNum() {
         return paramNum;
     }
 
-    public Integer getNeedArgsNum() {
+    public int getNeedArgsNum() {
         return needArgsNum;
     }
 
-    public Integer getNowArgsNum() {
+    public int getNowArgsNum() {
         return nowArgsNum;
     }
 }
