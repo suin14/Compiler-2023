@@ -1,6 +1,8 @@
 int test;
 int main(){
+    test = 1 +  2;
     printf("Hello World\n");
+    printf("%d\n",test);
     test = getint();
     printf("%d",test);
     return 0;
