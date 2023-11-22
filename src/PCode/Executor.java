@@ -205,7 +205,7 @@ public class Executor {
                 int n = (int) code.getValue2();
                 para.setDimension(n);
                 if (n == 2) {
-                    para.setDimensionValue(pop(), 2);
+                    para.setDim2(pop());
                 }
                 varTable.put((String) code.getValue1(), para);
                 nowArgsNum++;
@@ -296,16 +296,16 @@ public class Executor {
                 if (n == 1) {
                     int i = pop();
                     if (var != null) {
-                        var.setDimensionValue(i, 1);
+                        var.setDim1(i);
                     }
                 }
                 if (n == 2) {
                     int j = pop(), i = pop();
                     if (var != null) {
-                        var.setDimensionValue(i, 1);
+                        var.setDim1(i);
                     }
                     if (var != null) {
-                        var.setDimensionValue(j, 2);
+                        var.setDim2(j);
                     }
                 }
             }
