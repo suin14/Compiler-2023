@@ -131,14 +131,32 @@ public class Executor {
     }
 
     private void handleArithmeticInstruction(PCode code) {
-        int b = pop();
-        int a = pop();
         switch (code.getType()) {
-            case ADD -> push(a + b);
-            case SUB -> push(a - b);
-            case MUL -> push(a * b);
-            case DIV -> push(a / b);
-            case MOD -> push(a % b);
+            case ADD -> {
+                int b = pop();
+                int a = pop();
+                push(a + b);
+            }
+            case SUB -> {
+                int b = pop();
+                int a = pop();
+                push(a - b);
+            }
+            case MUL -> {
+                int b = pop();
+                int a = pop();
+                push(a * b);
+            }
+            case DIV -> {
+                int b = pop();
+                int a = pop();
+                push(a / b);
+            }
+            case MOD -> {
+                int b = pop();
+                int a = pop();
+                push(a % b);
+            }
             case NEG -> push(-pop());
             case POS -> push(pop());
         }

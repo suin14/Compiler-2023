@@ -1,12 +1,9 @@
-void f2() {
-    int d[2];
-    d[0] = 10000;
-}
+int main(){
 
-
-int main()
-{
-    f2();
-    printf("ok");
+int a = 0;
+    for(int i=0;i<2;i++) {
+        a=a+1;
+    }
+    printf("%d/nok",a);
     return 0;
 }
