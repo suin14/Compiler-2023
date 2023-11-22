@@ -18,15 +18,10 @@ public class Analyser {
         input = new Scanner(inputFile);
         fileProcessor = new FileProcessor("testfile.txt", "pcoderesult.txt");
         lexicalAnalyser = new LexicalAnalyser();
-<<<<<<< Updated upstream
-        grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getWords());
-        grammaticalAnalyser.printWords(new FileProcessor("testfile.txt","output.txt").getWriter());
-=======
         grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());
         //grammaticalAnalyser.printError(new FileProcessor("testfile.txt","error.txt").getWriter());
         PCodeExecutor = new Executor(grammaticalAnalyser.getCodes(), fileProcessor.getWriter(), input);
         PCodeExecutor.run();
         PCodeExecutor.print();
->>>>>>> Stashed changes
     }
 }

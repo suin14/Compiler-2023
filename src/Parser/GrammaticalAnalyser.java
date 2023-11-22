@@ -1,25 +1,31 @@
 package Parser;
+import Lexer.Word;
 import Lexer.Token;
-<<<<<<< Updated upstream
-import Parser.Exps;
-=======
 import PCode.LabelGenerator;
 import PCode.Operator.Operator;
 import PCode.PCode;
 import Symbol.*;
 import Error.*;
->>>>>>> Stashed changes
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 
 public class GrammaticalAnalyser {
-    private ArrayList<Token> tokens;
+    private final ArrayList<Token> tokens;
     private int index;
     private Token current;
-    private ArrayList<String> grammar;
+    private final ArrayList<String> grammar;
+
+    private final HashMap<Integer, SymbolTable> symboltable = new HashMap<>();
+    private final HashMap<String, Function> functions = new HashMap<>();
+    private final ArrayList<Errors> errors = new ArrayList<>();
+    private int area = -1;
+    private boolean needReturn = false;
+    private int forFlag = 0;
 
     // pcode
     private int areaID = -1;
@@ -42,16 +48,20 @@ public class GrammaticalAnalyser {
         index++;
     }
 
+    private void getTokenWithoutGrammar() {
+        current = tokens.get(index);
+        index++;
+    }
+
     private Token getNext() {
+        // 检查列表是否为空或者索引是否越界
+        if (index >= tokens.size() || index < 0) {
+            // 处理索引越界的情况，比如抛出异常或者返回默认值
+            return null;
+        }
         return tokens.get(index);
     }
 
-<<<<<<< Updated upstream
-    private void analyseCompUnit() { // CompUnit → {Decl} {FuncDef} MainFuncDef
-        Token nextToken = getNext();
-        while (nextToken.typeIs("CONSTTK") || (nextToken.typeIs("INTTK") && tokens.get(index + 1).typeIs("IDENFR")
-                && !tokens.get(index + 2).typeIs("LPARENT"))) { // {Decl}
-=======
     private void addArea() {
         areaID++;
         area++;
@@ -70,27 +80,31 @@ public class GrammaticalAnalyser {
         while (index < tokens.size() && (nextToken.typeIs(String.valueOf(Word.CONSTTK)) || (nextToken.typeIs(String.valueOf(Word.INTTK))
                 && index + 1 < tokens.size() && tokens.get(index + 1).typeIs(String.valueOf(Word.IDENFR))
                 && index + 2 < tokens.size() && !tokens.get(index + 2).typeIs(String.valueOf(Word.LPARENT))))) {
->>>>>>> Stashed changes
             analyseDecl();
             nextToken = getNext();
         }
-        while (nextToken.typeIs("VOIDTK") || ((nextToken.typeIs("INTTK") && !tokens.get(index + 1).typeIs("MAINTK")))) { // {FuncDef}
+
+        while (index < tokens.size() && (nextToken.typeIs(String.valueOf(Word.VOIDTK)) || ((nextToken.typeIs(String.valueOf(Word.INTTK))
+                && index + 1 < tokens.size() && !tokens.get(index + 1).typeIs(String.valueOf(Word.MAINTK)))))) {
             analyseFuncDef();
             nextToken = getNext();
         }
-        if (nextToken.typeIs("INTTK") && tokens.get(index + 1).typeIs("MAINTK")) { // MainFuncDef
+
+        if (index < tokens.size() && nextToken.typeIs(String.valueOf(Word.INTTK)) && index + 1 < tokens.size() && tokens.get(index + 1).typeIs(String.valueOf(Word.MAINTK))) {
             analyseMainFuncDef();
         } else {
             error();
         }
+
+        removeArea();
         grammar.add("<CompUnit>"); // 编译单元
     }
 
     private void analyseDecl() { // Decl → ConstDecl | VarDecl
         Token nextToken = getNext();
-        if (nextToken.typeIs("CONSTTK")) { // ConstDecl
+        if (nextToken.typeIs(String.valueOf(Word.CONSTTK))) { // ConstDecl
             analyseConstDecl();
-        } else if (nextToken.typeIs("INTTK")) { // VarDecl
+        } else if (nextToken.typeIs(String.valueOf(Word.INTTK))) { // VarDecl
             analyseVarDecl();
         } else {
             error();
@@ -99,15 +113,19 @@ public class GrammaticalAnalyser {
 
     private void analyseConstDecl() { // ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';'
         getToken(); // const
-        analyseBType(); // Btype
+        if (getNext().typeIs(String.valueOf(Word.INTTK))){
+            analyseBType(); // Btype
+        } else {
+            error();
+        }
         analyseConstDef(); // ConstDef
         Token nextToken = getNext();
-        while (nextToken.typeIs("COMMA")) {
+        while (nextToken.typeIs(String.valueOf(Word.COMMA))) {
             getToken(); // ,
             analyseConstDef(); // ConstDef
             nextToken = getNext();
         }
-        getToken();// ;
+        checkSemicn(); // ;
         grammar.add("<ConstDecl>");
     }
 
@@ -117,33 +135,30 @@ public class GrammaticalAnalyser {
 
     private void analyseConstDef() { // ConstDef → Ident { '[' ConstExp ']' } '=' ConstInitVal
         getToken(); // Ident
-<<<<<<< Updated upstream
-=======
         Token ident = current;
         if (checkSymbol(current)){
             error("b"); // 名字重定义
         }
         codes.add(new PCode(Operator.VAR, areaID + "_" + current.getContent()));
         int intType = 0;
->>>>>>> Stashed changes
         Token nextToken = getNext();
-        while (nextToken.typeIs("LBRACK")) {
+        while (nextToken.typeIs(String.valueOf(Word.LBRACK))) {
+            intType++; // 改变数据类型
             getToken(); // [
             analyseConstExp(getExp()); // ConstExp
-            getToken(); // ]
-            if (!current.typeIs("RBRACK")) {
-                error();
+            //check RBrack
+            if (getNext().typeIs(String.valueOf(Word.RBRACK))) {
+                getToken(); // ]
+            } else {
+                error("k");
             }
             nextToken = getNext();
         }
-<<<<<<< Updated upstream
-=======
         // todo
         if (intType != 0) { // 数组类型
             codes.add(new PCode(Operator.DIMVAR, areaID + "_" + ident.getContent(), intType));
         }
         addSymbol(ident,"const", intType, areaID);
->>>>>>> Stashed changes
         getToken(); // =
         analyseConstInitVal(); // ConstInitVal
         grammar.add("<ConstDef>"); // 定义数组
@@ -151,13 +166,13 @@ public class GrammaticalAnalyser {
 
     private void analyseConstInitVal() { // ConstInitVal → ConstExp | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
         Token nextToken = getNext();
-        if (nextToken.typeIs("LBRACE")) {
+        if (nextToken.typeIs(String.valueOf(Word.LBRACE))) {
             getToken(); // {
             nextToken = getNext();
-            if (!nextToken.typeIs("RBRACE")) {
+            if (!nextToken.typeIs(String.valueOf(Word.RBRACK))) {
                 analyseConstInitVal(); // ConstInitVal
                 nextToken = getNext();
-                while (nextToken.typeIs("COMMA")) {
+                while (nextToken.typeIs(String.valueOf(Word.COMMA))) {
                     getToken(); // ,
                     analyseConstInitVal(); // ConstInitVal
                     nextToken = getNext();
@@ -174,63 +189,57 @@ public class GrammaticalAnalyser {
         getToken(); // Btype
         analyseVarDef(); // VarDef
         Token nextToken = getNext();
-        while (nextToken.typeIs("COMMA")) {
+        while (nextToken.typeIs(String.valueOf(Word.COMMA))) {
             getToken(); // ,
             analyseVarDef(); // VarDef
             nextToken = getNext();
         }
-        getToken(); // ;
+        checkSemicn();
         grammar.add("<VarDecl>");
     }
 
     private void analyseVarDef() { // VarDef → Ident { '[' ConstExp ']' } | Ident { '[' ConstExp ']' } '=' InitVal
         getToken(); // Ident
-<<<<<<< Updated upstream
-=======
         Token ident = current;
         if (checkSymbol(current)){
             error("b"); // 名字重定义
         }
         codes.add(new PCode(Operator.VAR, areaID + "_" + current.getContent()));
         int intType = 0;
->>>>>>> Stashed changes
         Token nextToken = getNext();
-        while (nextToken.typeIs("LBRACK")) {
+        while (nextToken.typeIs(String.valueOf(Word.LBRACK))) {
+            intType++;
             getToken(); // [
             analyseConstExp(getExp()); // ConstExp
             getToken(); // ]
+            if (!current.typeIs(String.valueOf(Word.RBRACK))) {
+                error("k");
+            }
             nextToken = getNext();
         }
-<<<<<<< Updated upstream
-        if (nextToken.typeIs("ASSIGN")) {
-=======
         // todo
         if (intType != 0) {
             codes.add(new PCode(Operator.DIMVAR, areaID + "_" + ident.getContent(), intType));
         }
         if (nextToken.typeIs(String.valueOf(Word.ASSIGN))) {
->>>>>>> Stashed changes
             getToken(); // =
             analyseInitVal(); // InitVal
         } else {
             codes.add(new PCode(Operator.PLACEHOLDER, areaID + "_" + ident.getContent(), intType));
         }
-<<<<<<< Updated upstream
-=======
         addSymbol(ident,"var",intType, areaID);
->>>>>>> Stashed changes
         grammar.add("<VarDef>"); // 定义变量
     }
 
     private void analyseInitVal() { // InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'
         Token nextToken = getNext();
-        if (nextToken.typeIs("LBRACE")) {
+        if (nextToken.typeIs(String.valueOf(Word.LBRACE))) {
             getToken(); // {
             nextToken = getNext();
-            if (!nextToken.typeIs("RBRACE")) {
+            if (!nextToken.typeIs(String.valueOf(Word.RBRACE))) {
                 analyseInitVal(); // InitVal
                 nextToken = getNext();
-                while (nextToken.typeIs("COMMA")) {
+                while (nextToken.typeIs(String.valueOf(Word.COMMA))) {
                     getToken(); // ,
                     analyseInitVal(); // InitVal
                     nextToken = getNext();
@@ -244,10 +253,6 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseFuncDef() { // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
-<<<<<<< Updated upstream
-        analyseFuncType(); // FuncType
-        getToken(); // Ident
-=======
         //analyseFuncType(); // FuncType
         int startIdx = index;
         Function function;
@@ -260,16 +265,11 @@ public class GrammaticalAnalyser {
         codes.add(new PCode(Operator.FUNC, current.getContent()));
         function = new Function(current, returnType);
         addArea();
->>>>>>> Stashed changes
         getToken(); // (
         Token nextToken = getNext();
-        if (!nextToken.typeIs("RPARENT")) {
-            analyseFuncFParams();
+        if (nextToken.typeIs(String.valueOf(Word.VOIDTK))||nextToken.typeIs(String.valueOf(Word.INTTK))) {
+            params = analyseFuncFParams();
         }
-<<<<<<< Updated upstream
-        getToken(); // )
-        analyseBlock(); // Block
-=======
         if (!getNext().typeIs(String.valueOf(Word.RPARENT))) {
             error("j"); // 缺少右小括号’)’
         } else {
@@ -287,18 +287,12 @@ public class GrammaticalAnalyser {
         codes.add(new PCode(Operator.RET, 0));
         codes.add(new PCode(Operator.END_FUNC));
 
->>>>>>> Stashed changes
         grammar.add("<FuncDef>"); // 函数定义
     }
 
     private void analyseMainFuncDef() { // MainFuncDef → 'int' 'main' '(' ')' Block
         getToken(); // int
         getToken(); // main
-<<<<<<< Updated upstream
-        getToken(); // (
-        getToken(); // )
-        analyseBlock(); // Block
-=======
         if (functions.containsKey(current.getContent())) {
             error("b"); // 名字重定义
         } else {
@@ -319,76 +313,95 @@ public class GrammaticalAnalyser {
             error("g"); // 有返回值的函数缺少return语句
         }
         codes.add(new PCode(Operator.EXIT));
->>>>>>> Stashed changes
         grammar.add("<MainFuncDef>"); // main函数定义
     }
 
-    private void analyseFuncType() { // FuncType → 'void' | 'int'
+    private String analyseFuncType() { // FuncType → 'void' | 'int'
         getToken(); // void | int
         grammar.add("<FuncType>"); // 覆盖两种函数类型
+        return current.getContent();
     }
 
-    private void analyseFuncFParams() { // FuncFParams → FuncFParam { ',' FuncFParam }
-        analyseFuncFParam(); // FuncFParam
+    private ArrayList<Integer> analyseFuncFParams() { // FuncFParams → FuncFParam { ',' FuncFParam }
+        ArrayList<Integer> params = new ArrayList<>();
+        int paramType = analyseFuncFParam(); // FuncFParam
+        params.add(paramType);
         Token nextToken = getNext();
-        while (nextToken.typeIs("COMMA")) {
+        while (nextToken.typeIs(String.valueOf(Word.COMMA))) {
             getToken(); // ,
-            analyseFuncFParam(); // FuncFParam
+            paramType = analyseFuncFParam(); // FuncFParam
+            params.add(paramType);
             nextToken = getNext();
         }
         grammar.add("<FuncFParams>"); // 函数参数声明
+        return params;
     }
 
-    private void analyseFuncFParam() { // BType Ident ['[' ']' { '[' ConstExp ']' }]
+    private int analyseFuncFParam() { // BType Ident ['[' ']' { '[' ConstExp ']' }]
+        int paramType = 0;
         getToken(); // Btype
         getToken(); // Ident
+        Token ident = current;
+        if (checkSymbol(current)){
+            error("b"); // 名字重定义
+        }
         Token nextToken = getNext();
-        if (nextToken.typeIs("LBRACK")) {
+        if (nextToken.typeIs(String.valueOf(Word.LBRACK))) {
+            paramType++;
             getToken(); // [
-            getToken(); // ]
+            if (!getNext().typeIs(String.valueOf(Word.RBRACK))) {
+                error("k"); // 缺少右中括号’]’
+            } else {
+                getToken(); // ]
+            }
             nextToken = getNext();
-            while (nextToken.typeIs("LBRACK")) {
+            while (nextToken.typeIs(String.valueOf(Word.LBRACK))) {
+                paramType++;
                 getToken(); // [
                 analyseConstExp(getExp()); // ConstExp
-                getToken(); // ]
+                if (!getNext().typeIs(String.valueOf(Word.RBRACK))) {
+                    error("k"); // 缺少右中括号’]’
+                } else {
+                    getToken(); // ]
+                }
                 nextToken = getNext();
             }
         }
-<<<<<<< Updated upstream
-=======
         codes.add(new PCode(Operator.PARAM, areaID + "_" + ident.getContent(), paramType));
         addSymbol(ident,"param", paramType, areaID);
->>>>>>> Stashed changes
         grammar.add("<FuncFParam>"); // 定义函数形参
+        return paramType;
     }
 
-    private void analyseBlock() { // Block → '{' { BlockItem } '}'
+    private boolean analyseBlock(boolean fromFunc) { // Block → '{' { BlockItem } '}'
         getToken(); // {
+        if (!fromFunc) {
+            addArea();
+        }
         Token nextToken = getNext();
-        while (nextToken.typeIs("CONSTTK") || nextToken.typeIs("INTTK") || nextToken.typeSymbolizeStmt()) {
-            if (nextToken.typeIs("CONSTTK") || nextToken.typeIs("INTTK")) {
-                analyseBlockItem(); // BlockItem
+        boolean isReturn = false;
+        while (nextToken.typeIs(String.valueOf(Word.CONSTTK)) || nextToken.typeIs(String.valueOf(Word.INTTK)) || nextToken.typeSymbolizeStmt()) {
+            if (nextToken.typeIs(String.valueOf(Word.CONSTTK)) || nextToken.typeIs(String.valueOf(Word.INTTK))) {
+                isReturn = analyseBlockItem(); // BlockItem
             } else {
-                analyseStmt();
+                isReturn = analyseStmt();
             }
             nextToken = getNext();
         }
         getToken(); // }
+        if (!fromFunc) {
+            removeArea();
+        }
         grammar.add("<Block>"); // 语句块
+        return isReturn;
     }
 
-    private void analyseBlockItem() { // BlockItem → Decl | Stmt
+    private boolean analyseBlockItem() { // BlockItem → Decl | Stmt
         Token nextToken = getNext();
-        if (nextToken.typeIs("CONSTTK") || nextToken.typeIs("INTTK")) {
+        boolean isReturn = false;
+        if (nextToken.typeIs(String.valueOf(Word.CONSTTK)) || nextToken.typeIs(String.valueOf(Word.INTTK))) {
             analyseDecl(); // Decl
         } else {
-<<<<<<< Updated upstream
-            analyseStmt(); // Stmt
-        }
-    }
-
-    private void analyseStmt() {
-=======
             isReturn = analyseStmt(); // Stmt
         }
         return isReturn;
@@ -396,14 +409,9 @@ public class GrammaticalAnalyser {
 
     private boolean analyseStmt() {
         boolean isReturn = false;
->>>>>>> Stashed changes
         Token nextToken = getNext();
-        if (nextToken.typeIs("IDENFR")) { // LVal '=' Exp ';' | LVal '=' 'getint''('')'';'
+        if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // LVal '=' Exp ';' | LVal '=' 'getint''('')'';'
             ArrayList<Token> exp = getExp();
-<<<<<<< Updated upstream
-            if (!getNext().typeIs("SEMICN")) {
-                analyseLVal(exp); // LVal
-=======
             if (getNext().typeIs(String.valueOf(Word.ASSIGN))) {
                 Token ident = exp.get(0);
                 int intType = analyseLVal(exp); // LVal
@@ -414,15 +422,10 @@ public class GrammaticalAnalyser {
 //                    error("h", nextToken.getline());
 //
 //                }
->>>>>>> Stashed changes
                 getToken(); // =
-                if (getNext().typeIs("GETINTTK")) { // 'getint''('')'';'
+                if (getNext().typeIs(String.valueOf(Word.GETINTTK))) { // 'getint''('')'';'
                     getToken(); // getint
                     getToken(); // (
-<<<<<<< Updated upstream
-                    getToken(); // )
-                    getToken(); // ;
-=======
                     if (!getNext().typeIs(String.valueOf(Word.RPARENT))) {
                         error("j"); //缺少右小括号’)’
                     } else {
@@ -430,35 +433,17 @@ public class GrammaticalAnalyser {
                     }
                     checkSemicn(); // ;
                     codes.add(new PCode<>(Operator.GETINT));
->>>>>>> Stashed changes
                 } else {
                     analyseExp(getExp()); // Exp
-                    getToken(); // ;
+                    checkSemicn(); // ;
                 }
                 codes.add(new PCode<>(Operator.POP, getSymbol(ident).getAreaID() + "_" + ident.getContent()));
             } else {
                 analyseExp(exp);
-                getToken(); // ;
+                checkSemicn(); // ;
             }
         } else if (nextToken.typeSymbolizeExp()) { // [Exp] ';'
             analyseExp(getExp());
-<<<<<<< Updated upstream
-            getToken(); // ;
-        } else if (nextToken.typeIs("LBRACE")) { // Block
-            analyseBlock();
-        } else if (nextToken.typeIs("IFTK")) { // 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
-            getToken(); // if
-            getToken(); // (
-            analyseCond(); // Cond
-            getToken(); // )
-            analyseStmt(); // Stmt
-            nextToken = getNext();
-            if (nextToken.typeIs("ELSETK")) {
-                getToken(); // else
-                analyseStmt(); // Stmt
-            }
-        } else if (nextToken.typeIs("FORTK")) { // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
-=======
             checkSemicn(); // ;
         } else if (nextToken.typeIs(String.valueOf(Word.LBRACE))) { // Block
             analyseBlock(false);
@@ -501,11 +486,11 @@ public class GrammaticalAnalyser {
             codes.add(new PCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("if")));
             //addForLabelCode("for");
 
->>>>>>> Stashed changes
             getToken(); // for
+            forFlag++;
             getToken(); // (
             nextToken = getNext();
-            if (nextToken.typeIs("IDENFR")) { // ForStmt
+            if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // ForStmt
                 analyseForStmt();
             }
             getToken(); // ;
@@ -515,27 +500,9 @@ public class GrammaticalAnalyser {
             }
             getToken(); // ;
             nextToken = getNext();
-            if (nextToken.typeIs("IDENFR")) { // ForStmt
+            if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // ForStmt
                 analyseForStmt();
             }
-<<<<<<< Updated upstream
-            getToken(); // )
-            analyseStmt(); // Stmt
-        } else if (nextToken.typeIs("BREAKTK")) { // 'break' ';'
-            getToken(); // break
-            getToken(); // ;
-        } else if (nextToken.typeIs("CONTINUETK")) { // 'continue' ';'
-            getToken(); // continue
-            getToken(); // ;
-        } else if (nextToken.typeIs("RETURNTK")) { // 'return' [Exp] ';'
-            getToken(); // return
-            nextToken = getNext();
-            if (nextToken.typeSymbolizeExp()) {
-                analyseExp(getExp()); // Exp
-            }
-            getToken(); // ;
-        } else if (nextToken.typeIs("PRINTFTK")) { // 'printf' '(' FormatString { ',' Exp } ')' ';'
-=======
             if (!getNext().typeIs(String.valueOf(Word.RPARENT))) {
                 error("j"); // 缺少右小括号’)’
             } else {
@@ -577,21 +544,19 @@ public class GrammaticalAnalyser {
             checkSemicn(); // ;
             codes.add(new PCode(Operator.RET, (ret? 1 : 0)));
         } else if (nextToken.typeIs(String.valueOf(Word.PRINTFTK))) { // 'printf' '(' FormatString { ',' Exp } ')' ';'
->>>>>>> Stashed changes
             getToken(); // printf
+            Token printftk = current;
             getToken(); // (
             getToken(); // STRCON
+            Token strcon = current;
             nextToken = getNext();
-            while (nextToken.typeIs("COMMA")) {
+            int param = 0;
+            while (nextToken.typeIs(String.valueOf(Word.COMMA))) {
                 getToken(); // ,
                 analyseExp(getExp()); // Exp
+                param++;
                 nextToken = getNext();
             }
-<<<<<<< Updated upstream
-            getToken(); // )
-            getToken(); // ;
-        } else if (nextToken.typeIs("SEMICN")) { // ;
-=======
             if (strcon.checkFormat()) {
                 error("a", strcon.getline()); // 非法符号
             }
@@ -606,35 +571,32 @@ public class GrammaticalAnalyser {
             checkSemicn(); // ;
             codes.add(new PCode(Operator.PRINT, strcon.getContent(), param));
         } else if (nextToken.typeIs(String.valueOf(Word.SEMICN))) { // ;
->>>>>>> Stashed changes
             getToken(); // ;
         }
         grammar.add("<Stmt>");
+        return  isReturn;
     }
 
     private void analyseForStmt() { // ForStmt → LVal '=' Exp
         // todo
         ArrayList<Token> exp = getExp();
         analyseLVal(exp); // LVal
+        checkConst(exp.get(0)); // 检查左值是否是常量
         getToken(); // =
         analyseExp(getExp()); // Exp
         grammar.add("<ForStmt>");
     }
 
-    private void analyseExp(ArrayList<Token> exp) { // Exp → AddExp
-        analyseAddExp(exp);
+    private int analyseExp(ArrayList<Token> exp) { // Exp → AddExp
+        int intType = analyseAddExp(exp);
         grammar.add("<Exp>");
+        return intType;
     }
 
     private void analyseCond(String from) { // Cond → LOrExp
         analyseLOrExp(getExp(), from);
         grammar.add("<Cond>");
     }
-<<<<<<< Updated upstream
-
-    private void analyseLVal(ArrayList<Token> exp) { // LVal → Ident {'[' Exp ']'}
-        grammar.add(exp.get(0).toString()); // Ident
-=======
     private int analyseLVal(ArrayList<Token> exp) { // LVal → Ident {'[' Exp ']'}
         int intType = 0;
         Token ident = exp.get(0);
@@ -643,21 +605,21 @@ public class GrammaticalAnalyser {
         }
         codes.add(new PCode(Operator.PUSH, getSymbol(ident).getAreaID() + "_" + ident.getContent()));
         grammar.add(ident.toString()); // Ident
->>>>>>> Stashed changes
         if (exp.size() > 1) {
             ArrayList<Token> exp1 = new ArrayList<>();
             int flag = 0;
             for (int i = 1; i < exp.size(); i++) {
                 Token nextToken = exp.get(i);
-                if (nextToken.typeIs("LBRACK")) { // [
+                if (nextToken.typeIs(String.valueOf(Word.LBRACK))) { // [
                     flag++;
+                    intType++;
                     if (flag == 1) {
                         grammar.add(nextToken.toString());
                         exp1 = new ArrayList<>();
                     } else {
                         exp1.add(nextToken);
                     }
-                } else if (nextToken.typeIs("RBRACK")) { // ]
+                } else if (nextToken.typeIs(String.valueOf(Word.RBRACK))) { // ]
                     flag--;
                     if (flag == 0) {
                         analyseExp(exp1);
@@ -669,22 +631,27 @@ public class GrammaticalAnalyser {
                     exp1.add(nextToken);
                 }
             }
+            if (flag > 0) {
+                analyseExp(exp1);
+                error("k", exp.get(exp.size() - 1).getline()); // 缺少右中括号’]’
+            }
         }
         grammar.add("<LVal>");
+        if (checkSymbol(ident)) {
+            return getSymbol(ident).getIntType() - intType;
+        } else {
+            return 0;
+        }
     }
 
-    private void analysePrimaryExp(ArrayList<Token> exp) { // PrimaryExp → '(' Exp ')' | LVal | Number
+    private int analysePrimaryExp(ArrayList<Token> exp) { // PrimaryExp → '(' Exp ')' | LVal | Number
+        int intType = 0;
         Token nextToken = exp.get(0);
-        if (nextToken.typeIs("LPARENT")) {
+        if (nextToken.typeIs(String.valueOf(Word.LPARENT))) {
             // remove ( )
             grammar.add(exp.get(0).toString());
             analyseExp(new ArrayList<>(exp.subList(1, exp.size() - 1))); // Exp
             grammar.add(exp.get(exp.size() - 1).toString());
-<<<<<<< Updated upstream
-        } else if (nextToken.typeIs("IDENFR")) { // LVal
-            analyseLVal(exp);
-        } else if (nextToken.typeIs("INTCON")) { // Number
-=======
         } else if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // LVal
             intType = analyseLVal(exp);
             Token ident = exp.get(0);
@@ -694,12 +661,12 @@ public class GrammaticalAnalyser {
                 codes.add(new PCode(Operator.VALUE, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType));
             }
         } else if (nextToken.typeIs(String.valueOf(Word.INTCON))) { // Number
->>>>>>> Stashed changes
             analyseNumber(exp.get(0));
         } else {
             error();
         }
         grammar.add("<PrimaryExp>");
+        return intType;
     }
 
     private void analyseNumber(Token token) { // Number → IntConst
@@ -708,10 +675,15 @@ public class GrammaticalAnalyser {
         grammar.add("<Number>");
     }
 
-    private void analyseUnaryExp(ArrayList<Token> exp) { // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')'
-                                                        // | UnaryOp UnaryExp
+    private int analyseUnaryExp(ArrayList<Token> exp) { // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')'
+        // | UnaryOp UnaryExp
+        int intType = 0;
+        if (exp.isEmpty()) {
+            // 对于空列表的处理，可以根据需要抛出异常、返回默认值，或者执行其他逻辑
+            return intType; // 这里假设返回默认值 0，你可以根据实际情况返回合适的值或执行逻辑
+        }
         Token nextToken = exp.get(0);
-        if (nextToken.typeIs("PLUS") || nextToken.typeIs("MINU") || nextToken.typeIs("NOT")) { // UnaryOp UnaryExp
+        if (nextToken.typeIs(String.valueOf(Word.PLUS)) || nextToken.typeIs(String.valueOf(Word.MINU)) || nextToken.typeIs(String.valueOf(Word.NOT))) { // UnaryOp UnaryExp
             analyseUnaryOp(exp.get(0));
             analyseUnaryExp(new ArrayList<>(exp.subList(1, exp.size())));
             if (nextToken.typeIs(String.valueOf(Word.PLUS))) {
@@ -722,110 +694,108 @@ public class GrammaticalAnalyser {
                 codes.add(new PCode(Operator.NOT));
             }
         } else if (exp.size() == 1) {
-            analysePrimaryExp(exp); // PrimaryExp
+            intType = analysePrimaryExp(exp); // PrimaryExp
         } else {
-            if (exp.get(0).typeIs("IDENFR") && exp.get(1).typeIs("LPARENT")) { // Ident (
+            if (exp.get(0).typeIs(String.valueOf(Word.IDENFR)) && exp.get(1).typeIs(String.valueOf(Word.LPARENT))) { // Ident '(' [FuncRParams] ')'
+                Token ident = exp.get(0);
+                ArrayList<Integer> params = null;
+                if (!checkFunction(ident)) {
+                    error("c", ident.getline()); //未定义的名字
+                } else {
+                    params = getFunction(ident).getParams();
+                }
+                if (!exp.get(exp.size() - 1).typeIs(String.valueOf(Word.RPARENT))) {
+                    exp.add(new Token(")", current.getline()));
+                    error("j"); // 缺少右小括号’)’
+                }
                 grammar.add(exp.get(0).toString());
                 grammar.add(exp.get(1).toString());
                 if (exp.size() > 3) {
-                    analyseFuncRParams(new ArrayList<>(exp.subList(2, exp.size() - 1))); // FuncRParams
+                    analyseFuncRParams(ident, new ArrayList<>(exp.subList(2, exp.size() - 1)), params); // FuncRParams
+                } else {
+                    checkParams(ident, params);
                 }
                 grammar.add(exp.get(exp.size() - 1).toString()); // )
-<<<<<<< Updated upstream
-=======
                 codes.add(new PCode(Operator.CALL, ident.getContent()));
                 if (checkFunction(ident)) {
                     if (getFunction(ident).getReturnType().equals("void")) {
                         intType = -1;
                     }
                 }
->>>>>>> Stashed changes
             } else {
-                analysePrimaryExp(exp); // PrimaryExp
+                intType = analysePrimaryExp(exp); // PrimaryExp
             }
         }
         grammar.add("<UnaryExp>");
+        return intType;
     }
 
-<<<<<<< Updated upstream
-    private void analyseUnaryOp(Token nextToken) { // UnaryOp → '+' | '−' | '!'
-        grammar.add(nextToken.toString());
-=======
     private void analyseUnaryOp(Token token) { // UnaryOp → '+' | '−' | '!'
         grammar.add(token.toString());
->>>>>>> Stashed changes
         grammar.add("<UnaryOp>");
     }
 
-    private void analyseFuncRParams(ArrayList<Token> exp) { // FuncRParams → Exp { ',' Exp }
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("COMMA")));
-        int j = 0;
+    private void analyseFuncRParams(Token ident, ArrayList<Token> exp, ArrayList<Integer> params) { // FuncRParams → Exp { ',' Exp }
+        ArrayList<Integer> rparams = new ArrayList<>();
+        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.COMMA))));
         for (ArrayList<Token> exp1 : exps.getTokens()) {
-<<<<<<< Updated upstream
-            analyseExp(exp1); // Exp
-            if (j < exps.getSymbols().size()) {
-                grammar.add(exps.getSymbols().get(j++).toString());
-=======
             int intType = analyseExp(exp1); // Exp
             rparams.add(intType);
             codes.add(new PCode(Operator.RPARAM, intType));
             if (!exps.getSymbols().isEmpty()) {
                 grammar.add(exps.getSymbols().remove(0).toString());
->>>>>>> Stashed changes
             }
         }
+        checkParamsType(ident, params, rparams); // 检查参数匹配性
         grammar.add("<FuncRParams>");
     }
 
     private Exps divideExp(ArrayList<Token> exp, ArrayList<String> symbol) {
         ArrayList<ArrayList<Token>> exps = new ArrayList<>();
         ArrayList<Token> exp1 = new ArrayList<>();
-        ArrayList<Token> symbols = new ArrayList<>();
+        ArrayList<Token> symboltable = new ArrayList<>();
         boolean unaryFlag = false;
         int flag1 = 0;
         int flag2 = 0;
-        for (int i = 0; i < exp.size(); i++) {
-            Token nextToken = exp.get(i);
-            if (nextToken.typeIs("LPARENT")) {
+        for (Token nextToken : exp) {
+            if (nextToken.typeIs(String.valueOf(Word.LPARENT))) {
                 flag1++;
             }
-            if (nextToken.typeIs("RPARENT")) {
+            if (nextToken.typeIs(String.valueOf(Word.RPARENT))) {
                 flag1--;
             }
-            if (nextToken.typeIs("LBRACK")) {
+            if (nextToken.typeIs(String.valueOf(Word.LBRACK))) {
                 flag2++;
             }
-            if (nextToken.typeIs("RBRACK")) {
+            if (nextToken.typeIs(String.valueOf(Word.RBRACK))) {
                 flag2--;
             }
             if (symbol.contains(nextToken.getType()) && flag1 == 0 && flag2 == 0) {
                 // UnaryOp
-                if (nextToken.typeIs("PLUS")||nextToken.typeIs("MINU")||nextToken.typeIs("NOT")) {
+                if (nextToken.typeIs(String.valueOf(Word.PLUS)) || nextToken.typeIs(String.valueOf(Word.MINU)) || nextToken.typeIs(String.valueOf(Word.NOT))) {
                     if (!unaryFlag) {
                         exp1.add(nextToken);
                         continue;
                     }
                 }
                 exps.add(exp1);
-                symbols.add(nextToken);
+                symboltable.add(nextToken);
                 exp1 = new ArrayList<>();
             } else {
                 exp1.add(nextToken);
             }
-            unaryFlag = nextToken.typeIs("IDENFR") || nextToken.typeIs("RPARENT") || nextToken.typeIs("INTCON")
-                    || nextToken.typeIs("RBRACK");
+            unaryFlag = nextToken.typeIs(String.valueOf(Word.IDENFR)) || nextToken.typeIs(String.valueOf(Word.RPARENT)) || nextToken.typeIs(String.valueOf(Word.INTCON))
+                    || nextToken.typeIs(String.valueOf(Word.RBRACK));
         }
         exps.add(exp1);
-        return new Exps(exps, symbols);
+        return new Exps(exps, symboltable);
     }
 
-    private void analyseMulExp(ArrayList<Token> exp) { // MulExp → UnaryExp | MulExp ('*' | '/' | '%') UnaryExp
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("MULT", "DIV", "MOD")));
+    private int analyseMulExp(ArrayList<Token> exp) { // MulExp → UnaryExp | MulExp ('*' | '/' | '%') UnaryExp
+        int intType = 0;
+        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.MULT), String.valueOf(Word.DIV), String.valueOf(Word.MOD))));
         int j = 0;
         for (ArrayList<Token> exp1 : exps.getTokens()) {
-<<<<<<< Updated upstream
-            analyseUnaryExp(exp1); // UnaryExp
-=======
             intType = analyseUnaryExp(exp1); // UnaryExp
             if (j > 0) {
                 if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.MULT))) {
@@ -836,21 +806,19 @@ public class GrammaticalAnalyser {
                     codes.add(new PCode(Operator.MOD));
                 }
             }
->>>>>>> Stashed changes
             grammar.add("<MulExp>");
             if (j < exps.getSymbols().size()) { // MulExp ('*' | '/' | '%')
                 grammar.add(exps.getSymbols().get(j++).toString());
             }
         }
+        return intType;
     }
 
-    private void analyseAddExp(ArrayList<Token> exp) { // AddExp → MulExp | AddExp ('+' | '−') MulExp
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("PLUS", "MINU")));
+    private int analyseAddExp(ArrayList<Token> exp) { // AddExp → MulExp | AddExp ('+' | '−') MulExp
+        int intType = 0;
+        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.PLUS), String.valueOf(Word.MINU))));
         int j = 0;
         for (ArrayList<Token> exp1 : exps.getTokens()) {
-<<<<<<< Updated upstream
-            analyseMulExp(exp1); // MulExp
-=======
             intType = analyseMulExp(exp1); // MulExp
             if (j > 0) {
                 if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.PLUS))) {
@@ -859,16 +827,16 @@ public class GrammaticalAnalyser {
                     codes.add(new PCode(Operator.SUB));
                 }
             }
->>>>>>> Stashed changes
             grammar.add("<AddExp>");
             if (j < exps.getSymbols().size()) { // AddExp ('+' | '−') MulExp
                 grammar.add(exps.getSymbols().get(j++).toString());
             }
         }
+        return intType;
     }
 
     private void analyseRelExp(ArrayList<Token> exp) { // AddExp | RelExp ('<' | '>' | '<=' | '>=') AddExp
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("LSS", "LEQ", "GRE", "GEQ")));
+        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.LSS), String.valueOf(Word.LEQ), String.valueOf(Word.GRE), String.valueOf(Word.GEQ))));
         int j = 0;
         for (ArrayList<Token> exp1 : exps.getTokens()) {
             analyseAddExp(exp1);
@@ -891,7 +859,7 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseEqExp(ArrayList<Token> exp) { // EqExp → RelExp | EqExp ('==' | '!=') RelExp
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("EQL", "NEQ")));
+        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.EQL), String.valueOf(Word.NEQ))));
         int j = 0;
         for (ArrayList<Token> exp1 : exps.getTokens()) {
             analyseRelExp(exp1);
@@ -909,13 +877,8 @@ public class GrammaticalAnalyser {
         }
     }
 
-<<<<<<< Updated upstream
-    private void analyseLAndExp(ArrayList<Token> exp) { // LAndExp → EqExp | LAndExp '&&' EqExp
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("AND"))); // &&
-=======
     private void analyseLAndExp(ArrayList<Token> exp, String from, String label) { // LAndExp → EqExp | LAndExp '&&' EqExp
         Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.AND)))); // &&
->>>>>>> Stashed changes
         int j = 0;
         for (int i = 0; i < exps.getTokens().size(); i++) {
             ArrayList<Token> exp1 = exps.getTokens().get(i);
@@ -938,13 +901,8 @@ public class GrammaticalAnalyser {
         }
     }
 
-<<<<<<< Updated upstream
-    private void analyseLOrExp(ArrayList<Token> exp) { // LOrExp → LAndExp | LOrExp '||' LAndExp
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList("OR"))); // ||
-=======
     private void analyseLOrExp(ArrayList<Token> exp, String from) { // LOrExp → LAndExp | LOrExp '||' LAndExp
         Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.OR)))); // ||
->>>>>>> Stashed changes
         int j = 0;
         for (int i = 0; i < exps.getTokens().size(); i++) {
             ArrayList<Token> exp1 = exps.getTokens().get(i);
@@ -979,26 +937,47 @@ public class GrammaticalAnalyser {
         int funcFlag = 0;
         int flag1 = 0;
         int flag2 = 0;
+        Token preToken = null;
         Token nextToken = getNext();
         while (true) {
-            if (nextToken.typeIs("SEMICN") || nextToken.typeIs("ASSIGN") || nextToken.typeIs("RBRACE")) {
+            if (nextToken.typeIs(String.valueOf(Word.SEMICN)) || nextToken.typeIs(String.valueOf(Word.ASSIGN)) || nextToken.typeIs(String.valueOf(Word.RBRACE))
+                    || nextToken.checkTypeStmt()) {
                 break;
             }
-            if (nextToken.typeIs("COMMA") && !inFunc) {
+            if (nextToken.typeIs(String.valueOf(Word.COMMA)) && !inFunc) {
                 break;
             }
-            if (nextToken.typeIs("IDENFR")) {
-                if (tokens.get(index + 1).typeIs("LPARENT")) {
+            if (preToken != null) {
+                if ((preToken.typeIs(String.valueOf(Word.INTCON)) || preToken.typeIs(String.valueOf(Word.IDENFR))) && (nextToken.typeIs(String.valueOf(Word.INTCON)) || nextToken.typeIs(String.valueOf(Word.IDENFR)))) {
+                    break;
+                }
+                if ((preToken.typeIs(String.valueOf(Word.RPARENT)) || preToken.typeIs(String.valueOf(Word.RBRACK))) && (nextToken.typeIs(String.valueOf(Word.INTCON)) || nextToken.typeIs(String.valueOf(Word.IDENFR)))) {
+                    break;
+                }
+                if (flag1 == 0 && flag2 == 0) {
+                    if (preToken.typeIs(String.valueOf(Word.INTCON)) && nextToken.typeIs(String.valueOf(Word.LBRACK))) {
+                        break;
+                    }
+                    if (preToken.typeIs(String.valueOf(Word.INTCON)) && nextToken.typeIs(String.valueOf(Word.LBRACE))) {
+                        break;
+                    }
+                }
+            }
+            if (nextToken.checkNotInExp()) {
+                break;
+            }
+            if (nextToken.typeIs(String.valueOf(Word.IDENFR))) {
+                if (tokens.get(index + 1).typeIs(String.valueOf(Word.LPARENT))) {
                     inFunc = true;
                 }
             }
-            if (nextToken.typeIs("LPARENT")) {
+            if (nextToken.typeIs(String.valueOf(Word.LPARENT))) {
                 flag1++;
                 if (inFunc) {
                     funcFlag++;
                 }
             }
-            if (nextToken.typeIs("RPARENT")) {
+            if (nextToken.typeIs(String.valueOf(Word.RPARENT))) {
                 flag1--;
                 if (inFunc) {
                     funcFlag--;
@@ -1007,10 +986,10 @@ public class GrammaticalAnalyser {
                     }
                 }
             }
-            if (nextToken.typeIs("LBRACK")) {
+            if (nextToken.typeIs(String.valueOf(Word.LBRACK))) {
                 flag2++;
             }
-            if (nextToken.typeIs("RBRACK")) {
+            if (nextToken.typeIs(String.valueOf(Word.RBRACK))) {
                 flag2--;
             }
             if (flag1 < 0) {
@@ -1019,20 +998,27 @@ public class GrammaticalAnalyser {
             if (flag2 < 0) {
                 break;
             }
-            current = tokens.get(index);
-            index++;
+            getTokenWithoutGrammar();
             exp.add(current);
+            preToken = nextToken;
             nextToken = getNext();
         }
         return exp;
+    }
+
+    private void error(String type) {
+        error(type, current.getline());
+    }
+
+    private void error(String type, int line) {
+        errors.add(new Errors(line, type));
+        System.out.println(line + " " + type);
     }
 
     private void error() {
         //
     }
 
-<<<<<<< Updated upstream
-=======
     private void addSymbol(Token token, String node, int intType, int areaID) {
         symboltable.get(area).addSymbol(node, intType, token, areaID);
     }
@@ -1106,7 +1092,6 @@ public class GrammaticalAnalyser {
                 .orElse(null);
     }
 
->>>>>>> Stashed changes
     public void printWords(FileWriter writer) throws IOException {
         for (String str : grammar) {
             writer.write(str + "\n");
@@ -1115,8 +1100,6 @@ public class GrammaticalAnalyser {
         writer.close();
     }
 
-<<<<<<< Updated upstream
-=======
     //     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
 //     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
     public void printError(FileWriter writer) throws IOException {
@@ -1141,5 +1124,4 @@ public class GrammaticalAnalyser {
     public ArrayList<PCode> getCodes() {
         return codes;
     }
->>>>>>> Stashed changes
 }
