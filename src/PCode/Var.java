@@ -77,4 +77,12 @@ public class Var {
     public void setDim2(int dim2) {
         this.dim2 = dim2;
     }
+
+    public int getDim1() {
+        return dim1;
+    }
+
+    public int getDim2() {
+        return dim2;
+    }
 }

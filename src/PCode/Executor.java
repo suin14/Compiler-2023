@@ -106,9 +106,9 @@ public class Executor {
                     push(in);
                 }
                 case PRINT ->
-                     handlePrintInstruction(code);
+                        handlePrintInstruction(code);
                 case VALUE, ADDRESS, DIMVAR,PLACEHOLDER, EXIT ->
-                    handleFlowControlInstruction(code);
+                        handleFlowControlInstruction(code);
             }
         }
     }
@@ -310,14 +310,14 @@ public class Executor {
                 }
                 if (n == 1) {
                     if (var != null) {
-                        for (int i = 0; i < var.getDimensionValue(1); i++) {
+                        for (int i = 0; i < var.getDim1(); i++) {
                             push(0);
                         }
                     }
                 }
                 if (n == 2) {
                     if (var != null) {
-                        for (int i = 0; i < var.getDimensionValue(1) * var.getDimensionValue(2); i++) {
+                        for (int i = 0; i < var.getDim1() * var.getDim2(); i++) {
                             push(0);
                         }
                     }
@@ -347,14 +347,14 @@ public class Executor {
         if (var.getDimension() == 1) {
             return var.getIndex() + i;
         } else {
-            return var.getIndex() + var.getDimensionValue(2) * i;
+            return var.getIndex() + var.getDim2() * i;
         }
     }
 
     private int getAddressForDimensionTwo(Var var) {
         int j = pop();
         int i = pop();
-        return var.getIndex() + var.getDimensionValue(2) * i + j;
+        return var.getIndex() + var.getDim2() * i + j;
     }
 
     public void print() throws IOException {
