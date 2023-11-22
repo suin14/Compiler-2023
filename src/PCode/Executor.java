@@ -27,38 +27,47 @@ public class Executor {
         this.codes = codes;
         this.writer = writer;
         this.scanner = scanner;
+
         for (int i = 0; i < codes.size(); i++) {
             PCode code = codes.get(i);
-            // get main function address
-            if (code.getType().equals(Operator.MAIN)) {
-                mainAddress = i;
-            }
-            // get all label
-            if (code.getType().equals(Operator.LABEL)) {
-                labelTable.put((String) code.getValue1(), i);
-            }
-            //get all function
-            if (code.getType().equals(Operator.FUNC)) {
-                funcTable.put((String) code.getValue1(), new Func(i, (int) code.getValue2()));
+            Operator codeType = code.getType();
+            switch (codeType) {
+                case MAIN -> mainAddress = i;
+                case LABEL -> labelTable.put((String) code.getValue1(), i);
+                case FUNC -> funcTable.put((String) code.getValue1(), new Func(i, (int) code.getValue2()));
             }
         }
     }
+
 
     private void push(int i) {
         stack.add(i);
     }
 
     private int pop() {
+        if (stack.isEmpty()) {
+            // 处理堆栈为空的情况
+            return -1;
+        }
         return stack.remove(stack.size() - 1);
     }
 
     private Var getVar(String ident) {
-        if (varTable.containsKey(ident)) {
-            return varTable.get(ident);
+        Var variable = varTable.get(ident);
+        if (variable != null) {
+            return variable;
         } else {
-            return retInfos.get(0).getVarTable().get(ident);
+            RetInfo retInfo = retInfos.get(0);
+            if (retInfo != null) {
+                HashMap<String, Var> varTableFromRetInfo = retInfo.getVarTable();
+                if (varTableFromRetInfo != null) {
+                    return varTableFromRetInfo.get(ident);
+                }
+            }
         }
+        return null;
     }
+
 
     public void run() {
         int callArgsNum = 0;
@@ -76,7 +85,7 @@ public class Executor {
                 case PUSH ->
                     handlePushInstruction(code);
                 case POP ->
-                    handlePopInstruction(code);
+                    handlePopInstruction();
                 case ADD, SUB, MUL, DIV, MOD, NEG, POS ->
                     handleArithmeticInstruction(code);
                 case EQ, NE, LT, LTE, GT, GTE ->
@@ -110,7 +119,7 @@ public class Executor {
         }
     }
 
-    private void handlePopInstruction(PCode code) {
+    private void handlePopInstruction() {
         int value = pop();
         int address = pop();
         stack.set(address, value);
@@ -218,10 +227,10 @@ public class Executor {
             }
             case CALL -> {
                 Func func = funcTable.get((String) code.getValue1());
-                retInfos.add(new RetInfo(eip, varTable, stack.size() - 1, func.args(), func.args(), nowArgsNum));
-                eip = func.index();
+                retInfos.add(new RetInfo(eip, varTable, stack.size() - 1, func.getArgs(), func.getArgs(), nowArgsNum));
+                eip = func.getIndex();
                 varTable = new HashMap<>();
-                callArgsNum = func.args();
+                callArgsNum = func.getArgs();
                 nowArgsNum = 0;
             }
             case RPARAM -> {
@@ -262,27 +271,41 @@ public class Executor {
             case VALUE -> {
                 Var var = getVar((String) code.getValue1());
                 int n = (int) code.getValue2();
-                int address = getAddress(var, n);
+                int address = 0;
+                if (var != null) {
+                    address = getAddress(var, n);
+                }
                 push(stack.get(address));
             }
             case ADDRESS -> {
                 Var var = getVar((String) code.getValue1());
                 int n = (int) code.getValue2();
-                int address = getAddress(var, n);
+                int address = 0;
+                if (var != null) {
+                    address = getAddress(var, n);
+                }
                 push(address);
             }
             case DIMVAR -> {
                 Var var = getVar((String) code.getValue1());
                 int n = (int) code.getValue2();
-                var.setDimension(n);
+                if (var != null) {
+                    var.setDimension(n);
+                }
                 if (n == 1) {
                     int i = pop();
-                    var.setDim1(i);
+                    if (var != null) {
+                        var.setDim1(i);
+                    }
                 }
                 if (n == 2) {
                     int j = pop(), i = pop();
-                    var.setDim1(i);
-                    var.setDim2(j);
+                    if (var != null) {
+                        var.setDim1(i);
+                    }
+                    if (var != null) {
+                        var.setDim2(j);
+                    }
                 }
             }
             case PLACEHOLDER -> {
@@ -292,13 +315,17 @@ public class Executor {
                     push(0);
                 }
                 if (n == 1) {
-                    for (int i = 0; i < var.getDim1(); i++) {
-                        push(0);
+                    if (var != null) {
+                        for (int i = 0; i < var.getDim1(); i++) {
+                            push(0);
+                        }
                     }
                 }
                 if (n == 2) {
-                    for (int i = 0; i < var.getDim1() * var.getDim2(); i++) {
-                        push(0);
+                    if (var != null) {
+                        for (int i = 0; i < var.getDim1() * var.getDim2(); i++) {
+                            push(0);
+                        }
                     }
                 }
             }
@@ -308,9 +335,6 @@ public class Executor {
     }
 
     private int getAddress(Var var, int intType) {
-        // reminder: n is the actual type
-        // for example, to int a[3][2] ,a[0][0] is 0, a[0] is 1, a is 2
-        // so when search for address, the real [] num is defined dim - n
         int address = 0;
         int n = var.getDimension() - intType;
         if (n == 0) {
@@ -335,6 +359,7 @@ public class Executor {
     public void print() throws IOException {
         for (String s : prints) {
             writer.write(s);
+
         }
         writer.flush();
         writer.close();

@@ -416,7 +416,7 @@ public class GrammaticalAnalyser {
                 Token ident = exp.get(0);
                 int intType = analyseLVal(exp); // LVal
                 checkConst(nextToken);
-                codes.add(new PCode<>(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType));
+                codes.add(new PCode(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType));
                 // todo
 //                if (isConst(nextToken)) {
 //                    error("h", nextToken.getline());
@@ -432,12 +432,12 @@ public class GrammaticalAnalyser {
                         getToken(); //)
                     }
                     checkSemicn(); // ;
-                    codes.add(new PCode<>(Operator.GETINT));
+                    codes.add(new PCode(Operator.GETINT));
                 } else {
                     analyseExp(getExp()); // Exp
                     checkSemicn(); // ;
                 }
-                codes.add(new PCode<>(Operator.POP, getSymbol(ident).getAreaID() + "_" + ident.getContent()));
+                codes.add(new PCode(Operator.POP, getSymbol(ident).getAreaID() + "_" + ident.getContent()));
             } else {
                 analyseExp(exp);
                 checkSemicn(); // ;

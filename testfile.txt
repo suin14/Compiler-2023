@@ -1,9 +1,11 @@
-int test;
-int main(){
-    test = 1 +  2;
-    printf("Hello World\n");
-    printf("%d\n",test);
-    test = getint();
-    printf("%d",test);
+void pr(){
+
+}
+
+int main()
+{
+    pr();
+    int a = 10;
+    printf("%d", a);
     return 0;
 }
