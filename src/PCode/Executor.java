@@ -21,12 +21,10 @@ public class Executor {
     private int mainAddress;
 
     private final ArrayList<String> prints = new ArrayList<>();
-    private final FileWriter writer;
     private final Scanner scanner;
 
-    public Executor(ArrayList<PCode> codes, FileWriter writer, Scanner scanner) {
+    public Executor(ArrayList<PCode> codes, Scanner scanner) {
         this.codes = codes;
-        this.writer = writer;
         this.scanner = scanner;
 
         for (int i = 0; i < codes.size(); i++) {
@@ -69,12 +67,11 @@ public class Executor {
         return null;
     }
 
-
     public void run() {
         int callArgsNum = 0;
         int nowArgsNum = 0;
         boolean mainFlag = false;
-        ArrayList<Integer> rparas = new ArrayList<>();
+        ArrayList<Integer> rparams = new ArrayList<>();
         for (; eip < codes.size(); eip++) {
             PCode code = codes.get(eip);
             switch (code.getType()) {
@@ -82,21 +79,28 @@ public class Executor {
 
                 }
                 case VAR ->
-                    handleVarInstruction(code);
+                        handleVarInstruction(code);
                 case PUSH ->
-                    handlePushInstruction(code);
+                        handlePushInstruction(code);
                 case POP ->
-                    handlePopInstruction();
+                        handlePopInstruction();
                 case ADD, SUB, MUL, DIV, MOD, NEG, POS ->
-                    handleArithmeticInstruction(code);
+                        handleArithmeticInstruction(code);
                 case EQ, NE, LT, LTE, GT, GTE ->
-                    handleComparisonInstruction(code);
+                        handleComparisonInstruction(code);
                 case AND, OR, NOT ->
-                    handleLogicalInstruction(code);
+                        handleLogicalInstruction(code);
                 case JZ, JNZ, JMP ->
-                    handleControlInstruction(code);
-                case FUNC, MAIN, END_FUNC, PARAM, RPARAM, RET, CALL ->
-                    handleFunctionInstruction(code, mainFlag, rparas, callArgsNum, nowArgsNum);
+                        handleControlInstruction(code);
+                case FUNC, MAIN, END_FUNC, PARAM, RPARAM, RET ->
+                        handleFunctionInstruction(code, mainFlag, rparams, callArgsNum, nowArgsNum);
+                case CALL -> {
+                    Func func = funcTable.get((String) code.getValue1());
+                    retInfos.add(new RetInfo(eip, varTable, stack.size() - 1, func.args(), func.args(), nowArgsNum));
+                    eip = func.index();
+                    varTable = new HashMap<>();
+                    callArgsNum = func.args();
+                }
                 case GETINT -> {
                     int in = scanner.nextInt();
                     push(in);
@@ -188,7 +192,7 @@ public class Executor {
         }
     }
 
-    private void handleFunctionInstruction(PCode code, boolean mainFlag, ArrayList<Integer> rparas, int callArgsNum, int nowArgsNum) {
+    private void handleFunctionInstruction(PCode code, boolean mainFlag, ArrayList<Integer> rparams, int callArgsNum, int nowArgsNum) {
         switch (code.getType()) {
             case FUNC -> {
                 if (!mainFlag) {
@@ -196,21 +200,20 @@ public class Executor {
                 }
             }
             case MAIN -> {
-                mainFlag = true;
                 retInfos.add(new RetInfo(codes.size(), varTable, stack.size() - 1, 0, 0, 0));
                 varTable = new HashMap<>();
             }
             case PARAM -> {
-                Var para = new Var(rparas.get(rparas.size() - callArgsNum + nowArgsNum));
+                Var param = new Var(rparams.get(rparams.size() - callArgsNum + nowArgsNum));
                 int n = (int) code.getValue2();
-                para.setDimension(n);
+                param.setDimension(n);
                 if (n == 2) {
-                    para.setDim2(pop());
+                    param.setDim2(pop());
                 }
-                varTable.put((String) code.getValue1(), para);
+                varTable.put((String) code.getValue1(), param);
                 nowArgsNum++;
                 if (nowArgsNum == callArgsNum) {
-                    rparas.subList(rparas.size() - callArgsNum, rparas.size()).clear();
+                    rparams.subList(rparams.size() - callArgsNum, rparams.size()).clear();
                 }
             }
             case RET -> {
@@ -218,28 +221,18 @@ public class Executor {
                 RetInfo info = retInfos.remove(retInfos.size() - 1);
                 eip = info.getEip();
                 varTable = info.getVarTable();
-                callArgsNum = info.getNeedArgsNum();
-                nowArgsNum = info.getNowArgsNum();
                 if (n == 1) {
                     stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size() - 1).clear();
                 } else {
                     stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size()).clear();
                 }
             }
-            case CALL -> {
-                Func func = funcTable.get((String) code.getValue1());
-                retInfos.add(new RetInfo(eip, varTable, stack.size() - 1, func.args(), func.args(), nowArgsNum));
-                eip = func.index();
-                varTable = new HashMap<>();
-                callArgsNum = func.args();
-                nowArgsNum = 0;
-            }
             case RPARAM -> {
                 int n = (int) code.getValue1();
                 if (n == 0) {
-                    rparas.add(stack.size() - 1);
+                    rparams.add(stack.size() - 1);
                 } else {
-                    rparas.add(stack.get(stack.size() - 1));
+                    rparams.add(stack.get(stack.size() - 1));
                 }
             }
             case END_FUNC -> {
@@ -251,14 +244,14 @@ public class Executor {
         String s = (String) code.getValue1();
         int n = (int) code.getValue2();
         StringBuilder builder = new StringBuilder();
-        ArrayList<Integer> paras = new ArrayList<>();
+        ArrayList<Integer> params = new ArrayList<>();
         int index = n - 1;
         for (int i = 0; i < n; i++) {
-            paras.add(pop());
+            params.add(pop());
         }
         for (int i = 0; i < s.length(); i++) {
             if (i + 1 < s.length() && s.charAt(i) == '%' && s.charAt(i + 1) == 'd') {
-                builder.append(paras.get(index--).toString());
+                builder.append(params.get(index--).toString());
                 i++;
                 continue;
             }

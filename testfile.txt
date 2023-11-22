@@ -1,14 +1,12 @@
-void f1(int n) {
-    printf("%d",n);
+void f2() {
+    int d[2];
+    d[0] = 10000;
 }
+
 
 int main()
 {
-    int n = 1010;
-    f1(10);
-
-
-
+    f2();
     printf("ok");
     return 0;
 }
