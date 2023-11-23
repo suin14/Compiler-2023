@@ -91,7 +91,7 @@ public class Executor {
                 case AND, OR, NOT ->
                         handleLogicalInstruction(code);
                 case JZ, JNZ, JMP ->
-                        handleControlInstruction(code);
+                        handleControlInstruction(code, stack, labelTable);
                 case FUNC, MAIN, END_FUNC, PARAM, RPARAM, RET ->
                         handleFunctionInstruction(code, mainFlag, rparams, callArgsNum, nowArgsNum);
                 case CALL -> {
@@ -194,19 +194,19 @@ public class Executor {
         }
     }
 
-    private void handleControlInstruction(PCode code) {
+    private void handleControlInstruction(PCode code, ArrayList<Integer> stack, HashMap<String, Integer> labelTable) {
         switch (code.getType()) {
-            case JZ:
+            case JZ -> {
                 if (stack.get(stack.size() - 1) == 0) {
                     eip = labelTable.get((String) code.getValue1());
                 }
-            case JNZ:
+            }
+            case JNZ -> {
                 if (stack.get(stack.size() - 1) != 0) {
                     eip = labelTable.get((String) code.getValue1());
                 }
-            case JMP:
-                eip = labelTable.get((String) code.getValue1());
-
+            }
+            case JMP -> eip = labelTable.get((String) code.getValue1());
         }
     }
 

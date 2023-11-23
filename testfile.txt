@@ -1,46 +1,16 @@
-void logic() {
-    int i = 0,j = 0;
-    if (i <= j) {
-        i = j;
-    }
-    if (i >= j) {
-        i = j;
-    }
-    if (i < 100 && j >100) {
-
-    }
-    if (i == 0 && j != 0) {
-
-    }
-    if (i==0 && !j) {
-        printf("YeG1\n");
-    }
-    if (!i || j) {
-        printf("YeG2\n");
-    }
-    if(i || !j) {
-        printf("YeG3\n");
-    }
-    if(!i || !j) {
-        printf("YeG4\n");
-    }
-    if(!i && !j) {
-        printf("YeG5\n");
-    }
-    if(!i != j) {
-        i = j;
-    }
-    if (i != !j) {
-        j = i;
-    }
-    else {
-        j = i-+-+i * 100 / 10 %10 * (-1);
-    }
-    return;
+int __my_Ha_s__h(int _[], int len) {
+    int __, I;
+    __ = len;
+    I = 0;
+    return __;
 }
 
-int main()
-{
-    logic();
+
+
+int main() {
+    int array[12];
+
+
+    printf("%d\n",__my_Ha_s__h(array, 12));
     return 0;
 }
