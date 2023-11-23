@@ -1,20 +1,46 @@
-const int N=510,M=-520,KK=-1;
+void logic() {
+    int i = 0,j = 0;
+    if (i <= j) {
+        i = j;
+    }
+    if (i >= j) {
+        i = j;
+    }
+    if (i < 100 && j >100) {
 
-int a[510],b[510][510],n,m;
+    }
+    if (i == 0 && j != 0) {
 
-int getInt() {
-    int a;
-    a=getint();
-    return a;
-}
-
-void f1(int x) {
-    printf("%d",x);
+    }
+    if (i==0 && !j) {
+        printf("YeG1\n");
+    }
+    if (!i || j) {
+        printf("YeG2\n");
+    }
+    if(i || !j) {
+        printf("YeG3\n");
+    }
+    if(!i || !j) {
+        printf("YeG4\n");
+    }
+    if(!i && !j) {
+        printf("YeG5\n");
+    }
+    if(!i != j) {
+        i = j;
+    }
+    if (i != !j) {
+        j = i;
+    }
+    else {
+        j = i-+-+i * 100 / 10 %10 * (-1);
+    }
+    return;
 }
 
 int main()
 {
-    n=getInt();
-    f1(n);
+    logic();
     return 0;
 }

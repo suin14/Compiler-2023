@@ -8,10 +8,8 @@ import Error.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GrammaticalAnalyser {
     private final ArrayList<Token> tokens;
@@ -1068,17 +1066,17 @@ public class GrammaticalAnalyser {
             }
         }
     }
-    
-    private Symbol getSymbol(Token token) {
-        Symbol symbol = null;
-        for (SymbolTable s : symboltable.values()) {
-            if (s.findSymbol(token)) {
-                symbol = s.getSymbol(token);
-            }
-        }
-        return symbol;
-    }
 
+    //流式操作: 首先将 symboltable 中的每个 SymbolTable 实例转换成流，然后使用 filter 方法找到符合条件的 SymbolTable，
+    // 接着使用 map 方法得到对应的 Symbol，最后获取最后一个非空的符号对象，或者如果没有匹配则返回 null。
+    private Symbol getSymbol(Token token) {
+        return symboltable.values().stream()
+                .filter(s -> s.findSymbol(token))
+                .map(s -> s.getSymbol(token))
+                .filter(Objects::nonNull)
+                .reduce((first, second) -> second)
+                .orElse(null);
+    }
 
 //     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
 //     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。

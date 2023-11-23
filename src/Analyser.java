@@ -23,7 +23,6 @@ public class Analyser {
         // error
         // grammaticalAnalyser.printError(new FileProcessor("testfile.txt","error.txt").getWriter());
         PCodeExecutor = new Executor(grammaticalAnalyser.getCodes(), input);
-        //PCodeExecutor = new Executor(grammaticalAnalyser.getCodes(), fileProcessor.getWriter(), input);
         PCodeExecutor.run();
         PCodeExecutor.print();
     }
