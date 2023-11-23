@@ -1,9 +1,20 @@
-int main(){
+const int N=510,M=-520,KK=-1;
 
-int a = 0;
-    for(int i=0;i<2;i++) {
-        a=a+1;
-    }
-    printf("%d/nok",a);
+int a[510],b[510][510],n,m;
+
+int getInt() {
+    int a;
+    a=getint();
+    return a;
+}
+
+void f1(int x) {
+    printf("%d",x);
+}
+
+int main()
+{
+    n=getInt();
+    f1(n);
     return 0;
 }
