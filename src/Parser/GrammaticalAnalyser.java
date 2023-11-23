@@ -466,6 +466,7 @@ public class GrammaticalAnalyser {
             codes.add(new PCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if_end")));
             ifLabels.remove(ifLabels.size() - 1);
         } else if (nextToken.typeIs(String.valueOf(Word.FORTK))) { // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
+            // todo
             forLabels.add(new HashMap<>());
             forLabels.get(forLabels.size() - 1).put("for", labelGenerator.generateLabel("for"));
             forLabels.get(forLabels.size() - 1).put("for_end", labelGenerator.generateLabel("for_end"));

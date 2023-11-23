@@ -16,7 +16,7 @@ public class Analyser {
     public Analyser() throws IOException {
         File inputFile = new File("input.txt");
         input = new Scanner(inputFile);
-//        input = new Scanner(System.in);
+        //input = new Scanner(System.in);
         fileProcessor = new FileProcessor("testfile.txt", "pcoderesult.txt");
         lexicalAnalyser = new LexicalAnalyser();
         grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());

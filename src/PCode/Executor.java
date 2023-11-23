@@ -92,14 +92,59 @@ public class Executor {
                         handleLogicalInstruction(code);
                 case JZ, JNZ, JMP ->
                         handleControlInstruction(code, stack, labelTable);
-                case FUNC, MAIN, END_FUNC, PARAM, RPARAM, RET ->
-                        handleFunctionInstruction(code, mainFlag, rparams, callArgsNum, nowArgsNum);
+                case FUNC -> {
+                    if (!mainFlag) {
+                        eip = mainAddress - 1;
+                    }
+                }
+                case MAIN -> {
+                    mainFlag = true;
+                    retInfos.add(new RetInfo(codes.size(), varTable, stack.size() - 1, 0, 0, 0));
+                    varTable = new HashMap<>();
+                }
+                case PARAM -> {
+                    Var para = new Var(rparams.get(rparams.size() - callArgsNum + nowArgsNum));
+                    int n = (int) code.getValue2();
+                    para.setDimension(n);
+                    if (n == 2) {
+                        para.setDim2(pop());
+                    }
+                    varTable.put((String) code.getValue1(), para);
+                    nowArgsNum++;
+                    if (nowArgsNum == callArgsNum) {
+                        rparams.subList(rparams.size() - callArgsNum, rparams.size()).clear();
+                    }
+                }
+                case RPARAM -> {
+                    int n = (int) code.getValue1();
+                    if (n == 0) {
+                        rparams.add(stack.size() - 1);
+                    } else {
+                        rparams.add(stack.get(stack.size() - 1));
+                    }
+                }
+                case RET -> {
+                    int n = (int) code.getValue1();
+                    RetInfo info = retInfos.remove(retInfos.size() - 1);
+                    eip = info.getEip();
+                    varTable = info.getVarTable();
+                    callArgsNum = info.getNeedArgsNum();
+                    nowArgsNum = info.getNowArgsNum();
+                    if (n == 1) {
+                        stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size() - 1).clear();
+                    } else {
+                        stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size()).clear();
+                    }
+                }
                 case CALL -> {
                     Func func = funcTable.get((String) code.getValue1());
                     retInfos.add(new RetInfo(eip, varTable, stack.size() - 1, func.args(), func.args(), nowArgsNum));
                     eip = func.index();
                     varTable = new HashMap<>();
                     callArgsNum = func.args();
+                }
+                case END_FUNC -> {
+
                 }
                 case GETINT -> {
                     int in = scanner.nextInt();
@@ -207,54 +252,6 @@ public class Executor {
                 }
             }
             case JMP -> eip = labelTable.get((String) code.getValue1());
-        }
-    }
-
-    private void handleFunctionInstruction(PCode code, boolean mainFlag, ArrayList<Integer> rparams, int callArgsNum, int nowArgsNum) {
-        switch (code.getType()) {
-            case FUNC -> {
-                if (!mainFlag) {
-                    eip = mainAddress - 1;
-                }
-            }
-            case MAIN -> {
-                retInfos.add(new RetInfo(codes.size(), varTable, stack.size() - 1, 0, 0, 0));
-                varTable = new HashMap<>();
-            }
-            case PARAM -> {
-                Var param = new Var(rparams.get(rparams.size() - callArgsNum + nowArgsNum));
-                int n = (int) code.getValue2();
-                param.setDimension(n);
-                if (n == 2) {
-                    param.setDim2(pop());
-                }
-                varTable.put((String) code.getValue1(), param);
-                nowArgsNum++;
-                if (nowArgsNum == callArgsNum) {
-                    rparams.subList(rparams.size() - callArgsNum, rparams.size()).clear();
-                }
-            }
-            case RET -> {
-                int n = (int) code.getValue1();
-                RetInfo info = retInfos.remove(retInfos.size() - 1);
-                eip = info.getEip();
-                varTable = info.getVarTable();
-                if (n == 1) {
-                    stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size() - 1).clear();
-                } else {
-                    stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size()).clear();
-                }
-            }
-            case RPARAM -> {
-                int n = (int) code.getValue1();
-                if (n == 0) {
-                    rparams.add(stack.size() - 1);
-                } else {
-                    rparams.add(stack.get(stack.size() - 1));
-                }
-            }
-            case END_FUNC -> {
-            }
         }
     }
 
