@@ -1068,26 +1068,19 @@ public class GrammaticalAnalyser {
             }
         }
     }
-
-    // 这段代码使用了流式操作。它首先将 symboltable 中的每个 SymbolTable 实例转换成流，然后使用 filter 方法找到符合条件的 SymbolTable，
-    // 接着使用 map 方法得到对应的 Symbol，最后使用 findFirst 获取第一个匹配的 Symbol 或者如果没有匹配则返回 null。
+    
     private Symbol getSymbol(Token token) {
-        return symboltable.values().stream()
-                .filter(s -> s.findSymbol(token))
-                .map(s -> s.getSymbol(token))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public void printWords(FileWriter writer) throws IOException {
-        for (String str : grammar) {
-            writer.write(str + "\n");
+        Symbol symbol = null;
+        for (SymbolTable s : symboltable.values()) {
+            if (s.findSymbol(token)) {
+                symbol = s.getSymbol(token);
+            }
         }
-        writer.flush();
-        writer.close();
+        return symbol;
     }
 
-    //     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
+
+//     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
 //     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
     public void printError(FileWriter writer) throws IOException {
         errors.sort(Comparator.comparingInt(Errors::getline));
