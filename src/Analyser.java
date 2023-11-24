@@ -19,7 +19,7 @@ public class Analyser {
         fileProcessor = new FileProcessor("testfile.txt", "pcoderesult.txt");
         lexicalAnalyser = new LexicalAnalyser();
         grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());
-        // error
+        // 错误处理
         // grammaticalAnalyser.printError(new FileProcessor("testfile.txt","error.txt").getWriter());
         PCodeExecutor = new Executor(grammaticalAnalyser.getCodes(), input);
         PCodeExecutor.run();

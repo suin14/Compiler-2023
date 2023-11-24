@@ -60,7 +60,7 @@ public class Executor {
         } else {
             RetInfo retInfo = retInfos.get(0);
             if (retInfo != null) {
-                HashMap<String, Var> varTableFromRetInfo = retInfo.getVarTable();
+                HashMap<String, Var> varTableFromRetInfo = retInfo.varTable();
                 if (varTableFromRetInfo != null) {
                     return varTableFromRetInfo.get(ident);
                 }
@@ -128,14 +128,14 @@ public class Executor {
                 case RET -> {
                     int n = (int) code.getValue1();
                     RetInfo info = retInfos.remove(retInfos.size() - 1);
-                    eip = info.getEip();
-                    varTable = info.getVarTable();
-                    callArgsNum = info.getNeedArgsNum();
-                    nowArgsNum = info.getNowArgsNum();
+                    eip = info.eip();
+                    varTable = info.varTable();
+                    callArgsNum = info.needArgsNum();
+                    nowArgsNum = info.nowArgsNum();
                     if (n == 1) {
-                        stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size() - 1).clear();
+                        stack.subList(info.stackPtr() + 1 - info.paramNum(), stack.size() - 1).clear();
                     } else {
-                        stack.subList(info.getStackPtr() + 1 - info.getParamNum(), stack.size()).clear();
+                        stack.subList(info.stackPtr() + 1 - info.paramNum(), stack.size()).clear();
                     }
                 }
                 case CALL -> {
