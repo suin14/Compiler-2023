@@ -31,10 +31,13 @@ public class Var {
      * @return 指定维度的值
      */
     public int getDimensionValue(int dimension) {
-        if (dimension > 0 && dimension <= this.dimension) {
-            return dimensions[dimension - 1];
+        assertValidDimension(dimension);
+        return dimensions[dimension - 1];
+    }
+    private void assertValidDimension(int dimension) {
+        if (dimension <= 0 || dimension > this.dimension) {
+            throw new IllegalArgumentException("Invalid dimension index: " + dimension);
         }
-        return -1; // 或者抛出异常，表示维度索引越界
     }
 
     /**

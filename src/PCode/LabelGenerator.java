@@ -7,6 +7,6 @@ public class LabelGenerator {
 
     public String generateLabel(String type) {
         int currentCount = labelCount.incrementAndGet();
-        return "label_" + type + "_" + currentCount;
+        return String.format("label_%s_%d", type, currentCount);
     }
 }
