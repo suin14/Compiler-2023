@@ -3,26 +3,21 @@ package PCode;
 import PCode.Operator.Operator;
 
 public class PCode {
-    private Operator type;
-    private Object value1 = null;
-    private Object value2 = null;
+    private final Operator type;
+    private Object value1;
+    private Object value2;
 
     public PCode(Operator type) {
-        this.type = type;
+        this(type, null);
     }
 
     public PCode(Operator type, Object value1) {
-        this.type = type;
-        this.value1 = value1;
+        this(type, value1, null);
     }
 
     public PCode(Operator type, Object value1, Object value2) {
         this.type = type;
         this.value1 = value1;
-        this.value2 = value2;
-    }
-
-    public void setValue2(Object value2) {
         this.value2 = value2;
     }
 
@@ -38,26 +33,29 @@ public class PCode {
         return value2;
     }
 
+    public void setValue1(Object value1) {
+        this.value1 = value2;
+    }
+
+    public void setValue2(Object value2) {
+        this.value2 = value2;
+    }
+
     @Override
     public String toString() {
-        switch (type) {
-            case LABEL -> {
-                return value1.toString() + ": ";
-            }
-            case FUNC -> {
-                return "FUNC @" + value1.toString() + ":";
-            }
-            case CALL -> {
-                return "$" + value1.toString();
-            }
-            case PRINT -> {
-                return type + " " + value1;
-            }
+        String result = switch (type) {
+            case LABEL -> value1 + ": ";
+            case FUNC -> "FUNC @" + value1 + ":";
+            case CALL -> "$" + value1;
+            case PRINT -> type + " " + value1;
             default -> {
-                String a = value1 != null ? value1.toString() : "";
-                String b = value2 != null ? ", " + value2.toString() : "";
-                return type + " " + a + b;
+                String values = value1 != null ? value1.toString() : "";
+                if (value2 != null) {
+                    values += ", " + value2;
+                }
+                yield type + " " + values;
             }
-        }
+        };
+        return result;
     }
 }

@@ -7,9 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -306,17 +304,19 @@ public class Executor {
             }
             case DIMVAR -> {
                 Var var = getVar((String) code.getValue1());
-                int n = (int) code.getValue2();
+                int dim = (int) code.getValue2();
                 if (var != null) {
-                    var.setDimension(n);
+                    var.setDimension(dim);
                 }
-                if (n == 1) {
+                // 一维数组
+                if (dim == 1) {
                     int i = pop();
                     if (var != null) {
                         var.setDim1(i);
                     }
                 }
-                if (n == 2) {
+                // 二维数组
+                if (dim == 2) {
                     int j = pop(), i = pop();
                     if (var != null) {
                         var.setDim1(i);
@@ -328,18 +328,20 @@ public class Executor {
             }
             case PLACEHOLDER -> {
                 Var var = getVar((String) code.getValue1());
-                int n = (int) code.getValue2();
-                if (n == 0) {
+                int intType = (int) code.getValue2();
+                if (intType == 0) {
                     push(0);
                 }
-                if (n == 1) {
+                // 将第一维度的零推送到栈中
+                if (intType == 1) {
                     if (var != null) {
                         for (int i = 0; i < var.getDim1(); i++) {
                             push(0);
                         }
                     }
                 }
-                if (n == 2) {
+                // 将二维数组的零推送到栈中
+                if (intType == 2) {
                     if (var != null) {
                         for (int i = 0; i < var.getDim1() * var.getDim2(); i++) {
                             push(0);
@@ -354,6 +356,7 @@ public class Executor {
 
     private int getAddress(Var var, int intType) {
         int dimension = var.getDimension() - intType;
+        // 根据不同的维度差值调用相应的方法来计算地址
         return switch (dimension) {
             case 0 -> getAddressForDimensionZero(var);
             case 1 -> getAddressForDimensionOne(var);
@@ -363,21 +366,27 @@ public class Executor {
     }
 
     private int getAddressForDimensionZero(Var var) {
+        // 返回零维度变量的索引
         return var.getIndex();
     }
 
     private int getAddressForDimensionOne(Var var) {
+        // 获取栈顶的值
         int i = pop();
         if (var.getDimension() == 1) {
+            // 如果是一维数组，返回索引+偏移量
             return var.getIndex() + i;
         } else {
+            // 如果是二维数组，返回索引+偏移量
             return var.getIndex() + var.getDim2() * i;
         }
     }
 
     private int getAddressForDimensionTwo(Var var) {
+        // 获取栈顶的两个值
         int j = pop();
         int i = pop();
+        // 返回索引+偏移量
         return var.getIndex() + var.getDim2() * i + j;
     }
 
