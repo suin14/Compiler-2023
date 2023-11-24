@@ -7,7 +7,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Executor {
     private final ArrayList<PCode> codes;
@@ -75,7 +79,7 @@ public class Executor {
         for (; eip < codes.size(); eip++) {
             PCode code = codes.get(eip);
             switch (code.getType()) {
-                case LABEL -> {
+                case LABEL, END_FUNC -> {
 
                 }
                 case VAR ->
@@ -143,9 +147,6 @@ public class Executor {
                     varTable = new HashMap<>();
                     callArgsNum = func.args();
                 }
-                case END_FUNC -> {
-
-                }
                 case GETINT -> {
                     int in = scanner.nextInt();
                     push(in);
@@ -210,15 +211,18 @@ public class Executor {
     private void handleComparisonInstruction(PCode code) {
         int b = pop();
         int a = pop();
+        int result = 0;
         switch (code.getType()) {
-            case EQ -> push(a == b ? 1 : 0);
-            case NE -> push(a != b ? 1 : 0);
-            case LT -> push(a < b ? 1 : 0);
-            case LTE -> push(a <= b ? 1 : 0);
-            case GT -> push(a > b ? 1 : 0);
-            case GTE -> push(a >= b ? 1 : 0);
+            case EQ -> result = a == b ? 1 : 0;
+            case NE -> result = a != b ? 1 : 0;
+            case LT -> result = a < b ? 1 : 0;
+            case LTE -> result = a <= b ? 1 : 0;
+            case GT -> result = a > b ? 1 : 0;
+            case GTE -> result = a >= b ? 1 : 0;
         }
+        push(result);
     }
+
 
     private void handleLogicalInstruction(PCode code) {
         switch (code.getType()) {
@@ -240,38 +244,43 @@ public class Executor {
     }
 
     private void handleControlInstruction(PCode code, ArrayList<Integer> stack, HashMap<String, Integer> labelTable) {
+        int value = stack.get(stack.size() - 1);
+        String label = (String) code.getValue1();
         switch (code.getType()) {
             case JZ -> {
-                if (stack.get(stack.size() - 1) == 0) {
-                    eip = labelTable.get((String) code.getValue1());
+                if (value == 0) {
+                    eip = labelTable.get(label);
                 }
             }
             case JNZ -> {
-                if (stack.get(stack.size() - 1) != 0) {
-                    eip = labelTable.get((String) code.getValue1());
+                if (value != 0) {
+                    eip = labelTable.get(label);
                 }
             }
-            case JMP -> eip = labelTable.get((String) code.getValue1());
+            case JMP -> eip = labelTable.get(label);
         }
     }
 
+    // 使用 Matcher 查找 %d 并逐个替换为参数列表中的值，并将结果添加到 StringBuilder 中。
+    // 最后将 StringBuilder 转换为字符串，并将其添加到 prints 列表中。
     private void handlePrintInstruction(PCode code) {
         String s = (String) code.getValue1();
         int n = (int) code.getValue2();
-        StringBuilder builder = new StringBuilder();
         ArrayList<Integer> params = new ArrayList<>();
-        int index = n - 1;
         for (int i = 0; i < n; i++) {
             params.add(pop());
         }
-        for (int i = 0; i < s.length(); i++) {
-            if (i + 1 < s.length() && s.charAt(i) == '%' && s.charAt(i + 1) == 'd') {
-                builder.append(params.get(index--).toString());
-                i++;
-                continue;
-            }
-            builder.append(s.charAt(i));
+
+        StringBuilder builder = new StringBuilder();
+        int index = n - 1;
+        Matcher matcher = Pattern.compile("%d").matcher(s); // 创建匹配 "%d" 的 Matcher 对象
+        while (matcher.find() && index >= 0) {
+            builder.append(s, 0, matcher.start()).append(params.get(index--));
+            s = s.substring(matcher.end());
+            matcher = Pattern.compile("%d").matcher(s);
         }
+        builder.append(s);
+
         prints.add(builder.substring(1, builder.length() - 1));
     }
 
