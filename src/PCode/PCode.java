@@ -43,7 +43,7 @@ public class PCode {
 
     @Override
     public String toString() {
-        String result = switch (type) {
+        return switch (type) {
             case LABEL -> value1 + ": ";
             case FUNC -> "FUNC @" + value1 + ":";
             case CALL -> "$" + value1;
@@ -56,6 +56,5 @@ public class PCode {
                 yield type + " " + values;
             }
         };
-        return result;
     }
 }

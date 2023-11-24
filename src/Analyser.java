@@ -1,4 +1,5 @@
-import Lexer.*;
+import Lexer.FileProcessor;
+import Lexer.LexicalAnalyser;
 import Parser.GrammaticalAnalyser;
 import PCode.Executor;
 
@@ -7,22 +8,25 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class Analyser {
-    private final LexicalAnalyser lexicalAnalyser;
-    private final GrammaticalAnalyser grammaticalAnalyser;
-    private final Executor PCodeExecutor;
-    private final FileProcessor fileProcessor;
-    private final Scanner input;
 
     public Analyser() throws IOException {
-        //File inputFile = new File("input.txt");input = new Scanner(inputFile);
-        input = new Scanner(System.in);
-        fileProcessor = new FileProcessor("testfile.txt", "pcoderesult.txt");
-        lexicalAnalyser = new LexicalAnalyser();
-        grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());
-        // 错误处理
-        // grammaticalAnalyser.printError(new FileProcessor("testfile.txt","error.txt").getWriter());
-        PCodeExecutor = new Executor(grammaticalAnalyser.getCodes(), input);
-        PCodeExecutor.run();
-        PCodeExecutor.print();
+        File inputFile = new File("input.txt");Scanner input = new Scanner(inputFile);
+        //Scanner input = new Scanner(System.in);
+        LexicalAnalyser lexicalAnalyser = new LexicalAnalyser();
+        GrammaticalAnalyser grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());
+
+        // handleErrors(grammaticalAnalyser); // 错误处理
+
+        executePCode(grammaticalAnalyser, input); // 执行 PCode
+    }
+
+    private void handleErrors(GrammaticalAnalyser grammaticalAnalyser) throws IOException {
+        grammaticalAnalyser.printError(new FileProcessor("testfile.txt","error.txt").getWriter());
+    }
+
+    private void executePCode(GrammaticalAnalyser grammaticalAnalyser, Scanner input) throws IOException {
+        Executor pCodeExecutor = new Executor(grammaticalAnalyser.getCodes(), input);
+        pCodeExecutor.run();
+        pCodeExecutor.print();
     }
 }
