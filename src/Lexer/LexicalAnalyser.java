@@ -140,7 +140,6 @@ public class LexicalAnalyser {
         }
     }
 
-
     private void analyseDigit(char pre) {
         StringBuilder builder = new StringBuilder(String.valueOf(pre));
         Character current;

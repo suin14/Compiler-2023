@@ -11,7 +11,6 @@ public class FileProcessor {
     public FileProcessor(String inputFile, String outputFile) throws IOException {
         code = transferToCode(inputFile);
         writer = new FileWriter(outputFile);
-        //errorWriter = new FileWriter(new File("error.txt"));
     }
 
     public static String transferToCode (String filename) throws IOException {
