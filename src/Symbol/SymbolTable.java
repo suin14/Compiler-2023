@@ -23,7 +23,8 @@ public class SymbolTable {
     }
 
     public boolean isConst(Token token) {
-        return symbolHashMap.get(token.getContent()).getType().equals("const");
+        Symbol s = symbolHashMap.get(token.getContent());
+        return s != null && s.getType().equals("const");
     }
 
     @Override
