@@ -3,8 +3,6 @@ package PCode;
 public class Var {
     private final int index;
     private int dimension = 0;
-    private int dim1;
-    private int dim2;
     private final int[] dimensions = new int[2];
 
     public Var(int index) {
@@ -71,21 +69,5 @@ public class Var {
      */
     public void setDimension(int dimension) {
         this.dimension = dimension;
-    }
-
-    public void setDim1(int dim1) {
-        this.dim1 = dim1;
-    }
-
-    public void setDim2(int dim2) {
-        this.dim2 = dim2;
-    }
-
-    public int getDim1() {
-        return dim1;
-    }
-
-    public int getDim2() {
-        return dim2;
     }
 }
