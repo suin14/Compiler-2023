@@ -1,15 +1,18 @@
 package Parser;
 
-import Lexer.*;
-import PCode.*;
+import Error.Errors;
+import Error.Function;
+import Lexer.Token;
+import Lexer.Word;
+import PCode.LabelGenerator;
 import PCode.Operator.Operator;
-import Symbol.*;
-import Error.*;
+import PCode.PCode;
+import Symbol.Symbol;
+import Symbol.SymbolTable;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class GrammaticalAnalyser {
     private final ArrayList<Token> tokens;
@@ -724,7 +727,7 @@ public class GrammaticalAnalyser {
 
     private void analyseFuncRParams(Token ident, ArrayList<Token> exp, ArrayList<Integer> params) { // FuncRParams → Exp { ',' Exp }
         ArrayList<Integer> rparams = new ArrayList<>();
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.COMMA))));
+        Exps exps = divideExp(exp, new ArrayList<>(List.of(String.valueOf(Word.COMMA))));
         for (ArrayList<Token> exp1 : exps.getTokens()) {
             int intType = analyseExp(exp1); // Exp
             rparams.add(intType);
@@ -865,7 +868,7 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseLAndExp(ArrayList<Token> exp, String from, String label) { // LAndExp → EqExp | LAndExp '&&' EqExp
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.AND)))); // &&
+        Exps exps = divideExp(exp, new ArrayList<>(List.of(String.valueOf(Word.AND)))); // &&
         int j = 0;
         for (int i = 0; i < exps.getTokens().size(); i++) {
             ArrayList<Token> exp1 = exps.getTokens().get(i);
@@ -888,7 +891,7 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseLOrExp(ArrayList<Token> exp, String from) { // LOrExp → LAndExp | LOrExp '||' LAndExp
-        Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.OR)))); // ||
+        Exps exps = divideExp(exp, new ArrayList<>(List.of(String.valueOf(Word.OR)))); // ||
         int j = 0;
         for (int i = 0; i < exps.getTokens().size(); i++) {
             ArrayList<Token> exp1 = exps.getTokens().get(i);
