@@ -73,6 +73,22 @@ public class GrammaticalAnalyser {
         area--;
     }
 
+    private void addCode(Operator op) {
+        codes.add(new PCode(op));
+    }
+
+    private void addCode(Operator op, String content) {
+        codes.add(new PCode(op, content));
+    }
+
+    private void addCode(Operator op, String content, int intType) {
+        codes.add(new PCode(op, content, intType));
+    }
+
+    private void addCode(Operator op, int value) {
+        codes.add(new PCode(op, value));
+    }
+
     private void analyseCompUnit() {
         addArea();
 
@@ -139,7 +155,7 @@ public class GrammaticalAnalyser {
         if (checkSymbol(current)){
             error("b"); // 名字重定义
         }
-        codes.add(new PCode(Operator.VAR, areaID + "_" + current.getContent()));
+        addCode(Operator.VAR, areaID + "_" + current.getContent());
         int intType = 0;
         Token nextToken = getNext();
         while (nextToken.typeIs(String.valueOf(Word.LBRACK))) {
@@ -155,7 +171,7 @@ public class GrammaticalAnalyser {
             nextToken = getNext();
         }
         if (intType != 0) { // 数组类型
-            codes.add(new PCode(Operator.DIMVAR, areaID + "_" + ident.getContent(), intType));
+            addCode(Operator.DIMVAR, areaID + "_" + ident.getContent(), intType);
         }
         addSymbol(ident,"const", intType, areaID);
         getToken(); // =
@@ -203,7 +219,7 @@ public class GrammaticalAnalyser {
         if (checkSymbol(current)){
             error("b"); // 名字重定义
         }
-        codes.add(new PCode(Operator.VAR, areaID + "_" + current.getContent()));
+        addCode(Operator.VAR, areaID + "_" + current.getContent());
         int intType = 0;
         Token nextToken = getNext();
         while (nextToken.typeIs(String.valueOf(Word.LBRACK))) {
@@ -217,13 +233,13 @@ public class GrammaticalAnalyser {
             nextToken = getNext();
         }
         if (intType != 0) {
-            codes.add(new PCode(Operator.DIMVAR, areaID + "_" + ident.getContent(), intType));
+            addCode(Operator.DIMVAR, areaID + "_" + ident.getContent(), intType);
         }
         if (nextToken.typeIs(String.valueOf(Word.ASSIGN))) {
             getToken(); // =
             analyseInitVal(); // InitVal
         } else {
-            codes.add(new PCode(Operator.PLACEHOLDER, areaID + "_" + ident.getContent(), intType));
+            addCode(Operator.PLACEHOLDER, areaID + "_" + ident.getContent(), intType);
         }
         addSymbol(ident,"var",intType, areaID);
         grammar.add("<VarDef>"); // 定义变量
@@ -282,8 +298,8 @@ public class GrammaticalAnalyser {
         }
         removeArea();
         code.setValue2(params.size());
-        codes.add(new PCode(Operator.RET, 0));
-        codes.add(new PCode(Operator.END_FUNC));
+        addCode(Operator.RET, 0);
+        addCode(Operator.END_FUNC);
         grammar.add("<FuncDef>"); // 函数定义
     }
 
@@ -297,7 +313,7 @@ public class GrammaticalAnalyser {
             func.setParams(new ArrayList<>());
             functions.put("main",func);
         }
-        codes.add(new PCode(Operator.MAIN, current.getContent()));
+        addCode(Operator.MAIN, current.getContent());
         getToken(); // (
         if (!getNext().typeIs(String.valueOf(Word.RPARENT))) {
             error("j"); //缺少右小括号’)’
@@ -309,7 +325,7 @@ public class GrammaticalAnalyser {
         if (needReturn && !isReturn) {
             error("g"); // 有返回值的函数缺少return语句
         }
-        codes.add(new PCode(Operator.EXIT));
+        addCode(Operator.EXIT);
         grammar.add("<MainFuncDef>"); // main函数定义
     }
 
@@ -364,7 +380,7 @@ public class GrammaticalAnalyser {
                 nextToken = getNext();
             }
         }
-        codes.add(new PCode(Operator.PARAM, areaID + "_" + ident.getContent(), paramType));
+        addCode(Operator.PARAM, areaID + "_" + ident.getContent(), paramType);
         addSymbol(ident,"param", paramType, areaID);
         grammar.add("<FuncFParam>"); // 定义函数形参
         return paramType;
@@ -413,7 +429,7 @@ public class GrammaticalAnalyser {
                 Token ident = exp.get(0);
                 int intType = analyseLVal(exp); // LVal
                 checkConst(nextToken);
-                codes.add(new PCode(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType));
+                addCode(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType);
                 checkConst(nextToken);
                 getToken(); // =
                 if (getNext().typeIs(String.valueOf(Word.GETINTTK))) { // 'getint''('')'';'
@@ -425,12 +441,12 @@ public class GrammaticalAnalyser {
                         getToken(); //)
                     }
                     checkSemicn(); // ;
-                    codes.add(new PCode(Operator.GETINT));
+                    addCode(Operator.GETINT);
                 } else {
                     analyseExp(getExp()); // Exp
                     checkSemicn(); // ;
                 }
-                codes.add(new PCode(Operator.POP, getSymbol(ident).getAreaID() + "_" + ident.getContent()));
+                addCode(Operator.POP, getSymbol(ident).getAreaID() + "_" + ident.getContent());
             } else {
                 analyseExp(exp);
                 checkSemicn(); // ;
@@ -446,7 +462,7 @@ public class GrammaticalAnalyser {
             ifLabels.get(ifLabels.size() - 1).put("else", labelGenerator.generateLabel("else"));
             ifLabels.get(ifLabels.size() - 1).put("if_end", labelGenerator.generateLabel("if_end"));
             ifLabels.get(ifLabels.size() - 1).put("if_block", labelGenerator.generateLabel("if_block"));
-            codes.add(new PCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if")));
+            addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if"));
 
             getToken(); // if
             getToken(); // (
@@ -456,17 +472,17 @@ public class GrammaticalAnalyser {
             } else {
                 getToken(); //)
             }
-            codes.add(new PCode(Operator.JZ, ifLabels.get(ifLabels.size() - 1).get("else")));
-            codes.add(new PCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if_block")));
+            addCode(Operator.JZ, ifLabels.get(ifLabels.size() - 1).get("else"));
+            addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if_block"));
             analyseStmt(); // Stmt
             nextToken = getNext();
-            codes.add(new PCode(Operator.JMP, ifLabels.get(ifLabels.size() - 1).get("if_end")));
-            codes.add(new PCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("else")));
+            addCode(Operator.JMP, ifLabels.get(ifLabels.size() - 1).get("if_end"));
+            addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("else"));
             if (nextToken.typeIs(String.valueOf(Word.ELSETK))) {
                 getToken(); // else
                 analyseStmt(); // Stmt
             }
-            codes.add(new PCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if_end")));
+            addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if_end"));
             ifLabels.remove(ifLabels.size() - 1);
         } else if (nextToken.typeIs(String.valueOf(Word.FORTK))) { // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
             // todo
@@ -474,7 +490,7 @@ public class GrammaticalAnalyser {
             forLabels.get(forLabels.size() - 1).put("for", labelGenerator.generateLabel("for"));
             forLabels.get(forLabels.size() - 1).put("for_end", labelGenerator.generateLabel("for_end"));
             forLabels.get(forLabels.size() - 1).put("for_block", labelGenerator.generateLabel("for_block"));
-            codes.add(new PCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for")));
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for"));
 
             getToken(); // for
             forFlag++;
@@ -498,24 +514,24 @@ public class GrammaticalAnalyser {
             } else {
                 getToken(); //)
             }
-            codes.add(new PCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end")));
-            codes.add(new PCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_block")));
+            addCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end"));
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_block"));
 
             forFlag--;
             analyseStmt(); // Stmt
-            codes.add(new PCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for")));
-            codes.add(new PCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_end")));
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for"));
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_end"));
             forLabels.remove(forLabels.size() - 1);
         } else if (nextToken.typeIs(String.valueOf(Word.BREAKTK))) { // 'break' ';'
             getToken(); // break
-            codes.add(new PCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_end")));
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_end"));
             if (forFlag == 0) {
                 error("m"); // 在非循环块中使用break和continue语句
             }
             checkSemicn(); //;
         } else if (nextToken.typeIs(String.valueOf(Word.CONTINUETK))) { // 'continue' ';'
             getToken(); // continue
-            codes.add(new PCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for")));
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for"));
             if (forFlag == 0) {
                 error("m"); // 在非循环块中使用break和continue语句
             }
@@ -532,7 +548,7 @@ public class GrammaticalAnalyser {
                 ret = true;
             }
             checkSemicn(); // ;
-            codes.add(new PCode(Operator.RET, (ret? 1 : 0)));
+            addCode(Operator.RET, (ret? 1 : 0));
         } else if (nextToken.typeIs(String.valueOf(Word.PRINTFTK))) { // 'printf' '(' FormatString { ',' Exp } ')' ';'
             getToken(); // printf
             Token printftk = current;
@@ -559,7 +575,7 @@ public class GrammaticalAnalyser {
                 getToken(); // )
             }
             checkSemicn(); // ;
-            codes.add(new PCode(Operator.PRINT, strcon.getContent(), param));
+            addCode(Operator.PRINT, strcon.getContent(), param);
         } else if (nextToken.typeIs(String.valueOf(Word.SEMICN))) { // ;
             getToken(); // ;
         }
@@ -593,7 +609,7 @@ public class GrammaticalAnalyser {
         if (!checkSymbol(ident)) {
             error("c", ident.getline()); //未定义的名字
         }
-        codes.add(new PCode(Operator.PUSH, getSymbol(ident).getAreaID() + "_" + ident.getContent()));
+        addCode(Operator.PUSH, getSymbol(ident).getAreaID() + "_" + ident.getContent());
         grammar.add(ident.toString()); // Ident
         if (exp.size() > 1) {
             ArrayList<Token> exp1 = new ArrayList<>();
@@ -646,9 +662,9 @@ public class GrammaticalAnalyser {
             intType = analyseLVal(exp);
             Token ident = exp.get(0);
             if (intType != 0) {
-                codes.add(new PCode(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType));
+                addCode(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType);
             } else {
-                codes.add(new PCode(Operator.VALUE, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType));
+                addCode(Operator.VALUE, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType);
             }
         } else if (nextToken.typeIs(String.valueOf(Word.INTCON))) { // Number
             analyseNumber(exp.get(0));
@@ -660,7 +676,7 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseNumber(Token token) { // Number → IntConst
-        codes.add(new PCode(Operator.PUSH, Integer.parseInt(token.getContent())));
+        addCode(Operator.PUSH, Integer.parseInt(token.getContent()));
         grammar.add(token.toString());
         grammar.add("<Number>");
     }
@@ -677,11 +693,11 @@ public class GrammaticalAnalyser {
             analyseUnaryOp(exp.get(0));
             analyseUnaryExp(new ArrayList<>(exp.subList(1, exp.size())));
             if (nextToken.typeIs(String.valueOf(Word.PLUS))) {
-                codes.add(new PCode(Operator.POS));
+                addCode(Operator.POS);
             } else if (nextToken.typeIs(String.valueOf(Word.MINU))) {
-                codes.add(new PCode(Operator.NEG));
+                addCode(Operator.NEG);
             } else if (nextToken.typeIs(String.valueOf(Word.NOT))) {
-                codes.add(new PCode(Operator.NOT));
+                addCode(Operator.NOT);
             }
         } else if (exp.size() == 1) {
             intType = analysePrimaryExp(exp); // PrimaryExp
@@ -706,7 +722,7 @@ public class GrammaticalAnalyser {
                     checkParams(ident, params);
                 }
                 grammar.add(exp.get(exp.size() - 1).toString()); // )
-                codes.add(new PCode(Operator.CALL, ident.getContent()));
+                addCode(Operator.CALL, ident.getContent());
                 if (checkFunction(ident)) {
                     if (getFunction(ident).getReturnType().equals("void")) {
                         intType = -1;
@@ -731,7 +747,7 @@ public class GrammaticalAnalyser {
         for (ArrayList<Token> exp1 : exps.getTokens()) {
             int intType = analyseExp(exp1); // Exp
             rparams.add(intType);
-            codes.add(new PCode(Operator.RPARAM, intType));
+            addCode(Operator.RPARAM, intType);
             if (!exps.getSymbols().isEmpty()) {
                 grammar.add(exps.getSymbols().remove(0).toString());
             }
@@ -789,11 +805,11 @@ public class GrammaticalAnalyser {
             intType = analyseUnaryExp(exp1); // UnaryExp
             if (j > 0) {
                 if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.MULT))) {
-                    codes.add(new PCode(Operator.MUL));
+                    addCode(Operator.MUL);
                 } else if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.DIV))) {
-                    codes.add(new PCode(Operator.DIV));
+                    addCode(Operator.DIV);
                 } else if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.MOD))){
-                    codes.add(new PCode(Operator.MOD));
+                    addCode(Operator.MOD);
                 }
             }
             grammar.add("<MulExp>");
@@ -812,9 +828,9 @@ public class GrammaticalAnalyser {
             intType = analyseMulExp(exp1); // MulExp
             if (j > 0) {
                 if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.PLUS))) {
-                    codes.add(new PCode(Operator.ADD));
+                    addCode(Operator.ADD);
                 } else if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.MINU))){
-                    codes.add(new PCode(Operator.SUB));
+                    addCode(Operator.SUB);
                 }
             }
             grammar.add("<AddExp>");
@@ -832,13 +848,13 @@ public class GrammaticalAnalyser {
             analyseAddExp(exp1);
             if (j > 0) {
                 if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.LSS))) {
-                    codes.add(new PCode(Operator.LT));
+                    addCode(Operator.LT);
                 } else if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.LEQ))) {
-                    codes.add(new PCode(Operator.LTE));
+                    addCode(Operator.LTE);
                 } else if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.GRE))) {
-                    codes.add(new PCode(Operator.GT));
+                    addCode(Operator.GT);
                 } else if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.GEQ))){
-                    codes.add(new PCode(Operator.GTE));
+                    addCode(Operator.GTE);
                 }
             }
             grammar.add("<RelExp>");
@@ -855,9 +871,9 @@ public class GrammaticalAnalyser {
             analyseRelExp(exp1);
             if (j > 0) {
                 if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.EQL))) {
-                    codes.add(new PCode(Operator.EQ));
+                    addCode(Operator.EQ);
                 } else if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.NEQ))) {
-                    codes.add(new PCode(Operator.NE));
+                    addCode(Operator.NE);
                 }
             }
             grammar.add("<EqExp>");
@@ -874,13 +890,13 @@ public class GrammaticalAnalyser {
             ArrayList<Token> exp1 = exps.getTokens().get(i);
             analyseEqExp(exp1); // EqExp
             if (j > 0) {
-                codes.add(new PCode(Operator.AND));
+                addCode(Operator.AND);
             }
             if (exps.getTokens().size() > 1 && i != exps.getTokens().size() - 1) {
                 if (from.equals(String.valueOf(Word.IFTK))) {
-                    codes.add(new PCode(Operator.JZ, label));
+                    addCode(Operator.JZ, label);
                 } else {
-                    codes.add(new PCode(Operator.JZ, label));
+                    addCode(Operator.JZ, label);
                 }
             }
             grammar.add("<LAndExp>");
@@ -897,15 +913,15 @@ public class GrammaticalAnalyser {
             ArrayList<Token> exp1 = exps.getTokens().get(i);
             String label = labelGenerator.generateLabel("cond_" + i);
             analyseLAndExp(exp1, from, label); // LAndExp
-            codes.add(new PCode(Operator.LABEL, label));
+            addCode(Operator.LABEL, label);
             if (j > 0) {
-                codes.add(new PCode(Operator.OR));
+                addCode(Operator.OR);
             }
             if (exps.getTokens().size() > 1 && i != exps.getTokens().size() - 1) {
                 if (from.equals(String.valueOf(Word.IFTK))) {
-                    codes.add(new PCode(Operator.JNZ, ifLabels.get(ifLabels.size() - 1).get("if_block")));
+                    addCode(Operator.JNZ, ifLabels.get(ifLabels.size() - 1).get("if_block"));
                 } else if(from.equals(String.valueOf(Word.FORTK))){
-                    codes.add(new PCode(Operator.JNZ, forLabels.get(forLabels.size() - 1).get("for_block")));
+                    addCode(Operator.JNZ, forLabels.get(forLabels.size() - 1).get("for_block"));
                 }
             }
             grammar.add("<LOrExp>");
