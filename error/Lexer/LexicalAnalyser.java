@@ -56,7 +56,6 @@ public class LexicalAnalyser {
                 }
             }
         }
-
     }
 
     private void analyseSlash() {
@@ -100,14 +99,13 @@ public class LexicalAnalyser {
         }
     }
 
-
     private void analyseQuot() {
         Character current;
         int flag = 0;
         StringBuilder buffer = new StringBuilder(); //保存读取到的内容
         while ((current = getChar()) != null) {
             if (current == '"') { // 寻找到结束的‘"’
-                token.add(new Token(String.valueOf(Word.STRCON), "\"" + String.valueOf(buffer) + "\"", line));
+                token.add(new Token(String.valueOf(Word.STRCON),  "\"" + buffer + "\"", line));
                 return;
             } else {
                 if (current == '\\') {
@@ -124,6 +122,7 @@ public class LexicalAnalyser {
         }
     }
 
+
     private void analyseLogic(char pre) {
         Character current = getChar();
         if (current == null) {
@@ -139,6 +138,7 @@ public class LexicalAnalyser {
             token.add(new Token(String.valueOf(pre), line));
         }
     }
+
 
     private void analyseDigit(char pre) {
         StringBuilder builder = new StringBuilder(String.valueOf(pre));
