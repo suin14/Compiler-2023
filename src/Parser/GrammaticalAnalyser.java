@@ -1124,7 +1124,7 @@ public class GrammaticalAnalyser {
     }
 
     //     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
-//     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
+    //     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
     public void printError(FileWriter writer) throws IOException {
         errors.sort(Comparator.comparingInt(Errors::getline));
         try {
