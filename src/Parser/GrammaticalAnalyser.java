@@ -509,10 +509,10 @@ public class GrammaticalAnalyser {
             addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_cond"));
             if (nextToken.typeSymbolizeExp()) { // Cond
                 analyseCond(String.valueOf(Word.FORTK));
+                // 生成条件判断的跳转指令
+                // cond不成立 -> for_end
+                addCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end"));
             }
-            // 生成条件判断的跳转指令
-            // cond不成立 -> for_end
-            addCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end"));
             // cond成立 -> for_block
             addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_block"));
             getToken(); // ;
