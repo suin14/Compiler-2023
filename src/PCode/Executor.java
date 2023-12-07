@@ -109,7 +109,7 @@ public class Executor {
                     int n = (int) code.getValue2();
                     para.setDimension(n);
                     if (n == 2) {
-                        para.setDimensionValue(2, pop());
+                        para.setDim2(pop());
                     }
                     varTable.put((String) code.getValue1(), para);
                     nowArgsNum++;
@@ -312,17 +312,17 @@ public class Executor {
                 if (dim == 1) {
                     int i = pop();
                     if (var != null) {
-                        var.setDimensionValue(1, i);
+                        var.setDim1(i);
                     }
                 }
                 // 二维数组
                 if (dim == 2) {
                     int j = pop(), i = pop();
                     if (var != null) {
-                        var.setDimensionValue(1, i);
+                        var.setDim1(i);
                     }
                     if (var != null) {
-                        var.setDimensionValue(2, j);
+                        var.setDim2(j);
                     }
                 }
             }
@@ -335,7 +335,7 @@ public class Executor {
                 // 将第一维度的零推送到栈中
                 if (intType == 1) {
                     if (var != null) {
-                        for (int i = 0; i < var.getDimensionValue(1); i++) {
+                        for (int i = 0; i < var.getDim1(); i++) {
                             push(0);
                         }
                     }
@@ -343,7 +343,7 @@ public class Executor {
                 // 将二维数组的零推送到栈中
                 if (intType == 2) {
                     if (var != null) {
-                        for (int i = 0; i < var.getDimensionValue(1) * var.getDimensionValue(2); i++) {
+                        for (int i = 0; i < var.getDim1() * var.getDim2(); i++) {
                             push(0);
                         }
                     }
@@ -378,7 +378,7 @@ public class Executor {
             return var.getIndex() + i;
         } else {
             // 如果是二维数组，返回索引+偏移量
-            return var.getIndex() + var.getDimensionValue(2) * i;
+            return var.getIndex() + var.getDim2() * i;
         }
     }
 
@@ -387,7 +387,7 @@ public class Executor {
         int j = pop();
         int i = pop();
         // 返回索引+偏移量
-        return var.getIndex() + var.getDimensionValue(2) * i + j;
+        return var.getIndex() + var.getDim2() * i + j;
     }
 
     public void print() throws IOException {
