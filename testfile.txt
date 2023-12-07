@@ -1,69 +1,9 @@
-/*
-creat by wsr on 2023/9/26
-*/
-
-int a_global;
-const int b_global = 1;
-
-/***函数***/
-//void型
-//无形参
-void func1(){
-    printf("21182621\n");
-}
-//一个形参
-void func2(int a){
-    a=a-1;
-    return;
-}
-//多个形参（普通变量，一维数组，二维数组）
-void func3(int a, int arr[], int arrrr[][2]){
-    a = arr[0] + arrrr[0][0];
-    return;
-}
-//int型
-//无形参
-int func4(){
-    printf("21182621\n");
-    return 0;
-}
-//一个形参
-int func5(int a){
-    a = a + 1;
-    return a;
-}
-//多个形参（普通变量，一维数组，二维数组）
-int func6(int a, int arr[]){
-    a = a + arr[0];
-    return a;
-}
-
-//主函数定义
 int main(){
-
-    /****** 语句块 ******/
 
     int i=5;
     int j;
     for(j=1;j<=5;j=j+1){;
-	}
+   }
 
-	/*
-	j=1;
-	for(;j<=5;j=j+1){;continue;
-	}
-	for(j=1;;j=j+1){break;
-	}
-	for(j=1;j<=5;){j=j+1;
-	}
-	for(j=1;;){break;
-	}
-	for(;j<=5;){break;
-	}
-	for(;;j=j+1){break;
-	}
-	for(;;){break;
-	}
- */
     return 0;
 }

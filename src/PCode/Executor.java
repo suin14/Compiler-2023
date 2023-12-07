@@ -142,6 +142,7 @@ public class Executor {
                     eip = func.index();
                     varTable = new HashMap<>();
                     callArgsNum = func.args();
+                    nowArgsNum = 0;
                 }
                 case GETINT -> {
                     int in = scanner.nextInt();
