@@ -15,7 +15,7 @@ public class Analyser {
         LexicalAnalyser lexicalAnalyser = new LexicalAnalyser();
         GrammaticalAnalyser grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());
 
-        // handleErrors(grammaticalAnalyser); // 错误处理
+        handleErrors(grammaticalAnalyser); // 错误处理
 
         executePCode(grammaticalAnalyser, input); // 执行 PCode
     }
