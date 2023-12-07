@@ -616,6 +616,7 @@ public class GrammaticalAnalyser {
         checkConst(exp.get(0)); // 检查左值是否是常量
         getToken(); // =
         analyseExp(getExp()); // Exp
+        addCode(Operator.POP, getSymbol(ident).getAreaID() + "_" + ident.getContent());
         grammar.add("<ForStmt>");
     }
 
