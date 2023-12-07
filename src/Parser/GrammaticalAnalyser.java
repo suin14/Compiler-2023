@@ -226,8 +226,9 @@ public class GrammaticalAnalyser {
             intType++;
             getToken(); // [
             analyseConstExp(getExp()); // ConstExp
-            getToken(); // ]
-            if (!current.typeIs(String.valueOf(Word.RBRACK))) {
+            if (getNext().typeIs(String.valueOf(Word.RBRACK))) {
+                getToken();//]
+            } else {
                 error("k");
             }
             nextToken = getNext();
