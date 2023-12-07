@@ -61,9 +61,7 @@ public class Executor {
             RetInfo retInfo = retInfos.get(0);
             if (retInfo != null) {
                 HashMap<String, Var> varTableFromRetInfo = retInfo.varTable();
-                if (varTableFromRetInfo != null) {
-                    return varTableFromRetInfo.get(ident);
-                }
+                return varTableFromRetInfo.get(ident);
             }
         }
         return null;
@@ -109,7 +107,7 @@ public class Executor {
                     int n = (int) code.getValue2();
                     para.setDimension(n);
                     if (n == 2) {
-                        para.setDimensionValue(2, pop());
+                        para.setDimensionValue(2,pop());
                     }
                     varTable.put((String) code.getValue1(), para);
                     nowArgsNum++;
@@ -144,6 +142,7 @@ public class Executor {
                     eip = func.index();
                     varTable = new HashMap<>();
                     callArgsNum = func.args();
+                    nowArgsNum = 0;
                 }
                 case GETINT -> {
                     int in = scanner.nextInt();
