@@ -430,7 +430,6 @@ public class GrammaticalAnalyser {
                 int intType = analyseLVal(exp); // LVal
                 checkConst(nextToken);
                 addCode(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType);
-                checkConst(nextToken);
                 getToken(); // =
                 if (getNext().typeIs(String.valueOf(Word.GETINTTK))) { // 'getint''('')'';'
                     getToken(); // getint
@@ -586,7 +585,9 @@ public class GrammaticalAnalyser {
     private void analyseForStmt() { // ForStmt → LVal '=' Exp
         // todo
         ArrayList<Token> exp = getExp();
-        analyseLVal(exp); // LVal
+        int intType = analyseLVal(exp); // LVal
+        Token ident = exp.get(0);
+        addCode(Operator.ADDRESS, getSymbol(ident).getAreaID() + "_" + ident.getContent(), intType);
         checkConst(exp.get(0)); // 检查左值是否是常量
         getToken(); // =
         analyseExp(getExp()); // Exp

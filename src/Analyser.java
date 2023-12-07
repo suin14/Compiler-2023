@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class Analyser {
 
     public Analyser() throws IOException {
-        //File inputFile = new File("input.txt");Scanner input = new Scanner(inputFile);
+        //File inputFile = new File("input.txt"); Scanner input = new Scanner(inputFile);
         Scanner input = new Scanner(System.in);
         LexicalAnalyser lexicalAnalyser = new LexicalAnalyser();
         GrammaticalAnalyser grammaticalAnalyser = new GrammaticalAnalyser(lexicalAnalyser.getTokens());
