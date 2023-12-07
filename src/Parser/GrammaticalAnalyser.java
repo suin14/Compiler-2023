@@ -485,10 +485,12 @@ public class GrammaticalAnalyser {
             ifLabels.remove(ifLabels.size() - 1);
         } else if (nextToken.typeIs(String.valueOf(Word.FORTK))) { // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
             // todo
+            // ForStmt 表示初始化和更新部分，Cond 表示条件判断部分，Stmt 表示循环体部分
             forLabels.add(new HashMap<>());
             forLabels.get(forLabels.size() - 1).put("for", labelGenerator.generateLabel("for"));
             forLabels.get(forLabels.size() - 1).put("for_end", labelGenerator.generateLabel("for_end"));
             forLabels.get(forLabels.size() - 1).put("for_block", labelGenerator.generateLabel("for_block"));
+            forLabels.get(forLabels.size() - 1).put("for_stmt", labelGenerator.generateLabel("for_stmt"));
             addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for"));
 
             getToken(); // for
@@ -503,24 +505,39 @@ public class GrammaticalAnalyser {
             if (nextToken.typeSymbolizeExp()) { // Cond
                 analyseCond(String.valueOf(Word.FORTK));
             }
+            // 生成条件判断指令
+            addCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end"));
+
+
             getToken(); // ;
+            // 标记 for 循环变量更新的位置
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_stmt"));
             nextToken = getNext();
             if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // ForStmt
                 analyseForStmt();
             }
+            // 生成回到 for 循环开始的跳转指令
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for"));
+
+            // 检查是否存在右小括号
             if (!getNext().typeIs(String.valueOf(Word.RPARENT))) {
                 error("j"); // 缺少右小括号’)’
             } else {
                 getToken(); //)
             }
-            addCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end"));
-            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_block"));
 
-            forFlag--;
+            // 标记 for 循环主体的起始处
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_block"));
             analyseStmt(); // Stmt
-            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for"));
+            forFlag--;
+
+            // 生成回到 for 循环开始的跳转指令
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_stmt"));
+            // 标记 for 循环结束的位置
             addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_end"));
+            // 移除该 for 循环的标签信息
             forLabels.remove(forLabels.size() - 1);
+
         } else if (nextToken.typeIs(String.valueOf(Word.BREAKTK))) { // 'break' ';'
             getToken(); // break
             addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_end"));
