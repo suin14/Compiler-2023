@@ -491,33 +491,41 @@ public class GrammaticalAnalyser {
             forLabels.get(forLabels.size() - 1).put("for_end", labelGenerator.generateLabel("for_end"));
             forLabels.get(forLabels.size() - 1).put("for_block", labelGenerator.generateLabel("for_block"));
             forLabels.get(forLabels.size() - 1).put("for_stmt", labelGenerator.generateLabel("for_stmt"));
-            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for"));
+            forLabels.get(forLabels.size() - 1).put("for_cond", labelGenerator.generateLabel("for_cond"));
 
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for"));
             getToken(); // for
             forFlag++;
             getToken(); // (
             nextToken = getNext();
+            // ForStmt
+            // 初始化循环变量
             if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // ForStmt
                 analyseForStmt();
             }
             getToken(); // ;
             nextToken = getNext();
+            // Cond
+            // 标记 for_cond 循环体条件判断的位置
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_cond"));
             if (nextToken.typeSymbolizeExp()) { // Cond
                 analyseCond(String.valueOf(Word.FORTK));
             }
-            // 生成条件判断指令
+            // 生成条件判断的跳转指令
+            // cond不成立 -> for_end
             addCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end"));
-
-
+            // cond成立 -> for_block
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_block"));
             getToken(); // ;
-            // 标记 for 循环变量更新的位置
+            // ForStmt
+            // 标记 for_stmt 循环变量更新的位置
             addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_stmt"));
             nextToken = getNext();
             if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // ForStmt
                 analyseForStmt();
             }
-            // 生成回到 for 循环开始的跳转指令
-            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for"));
+            // 生成回到 for_cond 的跳转指令
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_cond"));
 
             // 检查是否存在右小括号
             if (!getNext().typeIs(String.valueOf(Word.RPARENT))) {
@@ -531,7 +539,7 @@ public class GrammaticalAnalyser {
             analyseStmt(); // Stmt
             forFlag--;
 
-            // 生成回到 for 循环开始的跳转指令
+            // 生成回到 for_stmt 的跳转指令
             addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_stmt"));
             // 标记 for 循环结束的位置
             addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_end"));
