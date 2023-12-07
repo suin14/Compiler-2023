@@ -1,10 +1,11 @@
 int main(){
-    int i=1;
-    int j,a=0;
-    for(j=i-1;j<=5;j=6){
-        j=j+1;
-        printf("%d %d\n",a,j);
-        a=100;
+    int i=0;
+    for(;;){
+        i=i+1;
+        if(i==3){
+            printf("One stmt for pass!\n");
+            break;
+        }
     }
 
     return 0;

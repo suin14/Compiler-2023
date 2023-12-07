@@ -484,7 +484,6 @@ public class GrammaticalAnalyser {
             addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if_end"));
             ifLabels.remove(ifLabels.size() - 1);
         } else if (nextToken.typeIs(String.valueOf(Word.FORTK))) { // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
-            // todo
             // ForStmt 表示初始化和更新部分，Cond 表示条件判断部分，Stmt 表示循环体部分
             forLabels.add(new HashMap<>());
             forLabels.get(forLabels.size() - 1).put("for", labelGenerator.generateLabel("for"));
@@ -555,7 +554,7 @@ public class GrammaticalAnalyser {
             checkSemicn(); //;
         } else if (nextToken.typeIs(String.valueOf(Word.CONTINUETK))) { // 'continue' ';'
             getToken(); // continue
-            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for"));
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_stmt"));
             if (forFlag == 0) {
                 error("m"); // 在非循环块中使用break和continue语句
             }
@@ -608,7 +607,6 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseForStmt() { // ForStmt → LVal '=' Exp
-        // todo
         ArrayList<Token> exp = getExp();
         int intType = analyseLVal(exp); // LVal
         Token ident = exp.get(0);
@@ -1125,7 +1123,7 @@ public class GrammaticalAnalyser {
                 .orElse(null);
     }
 
-//     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
+    //     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
 //     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
     public void printError(FileWriter writer) throws IOException {
         errors.sort(Comparator.comparingInt(Errors::getline));
