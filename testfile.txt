@@ -1,9 +1,12 @@
 int main(){
+    int i=1;
+    int j,a=0;
+    for(j=i-1;j<=5;j=6){
+        //j=j+1
+        ;
+        a=100;
+    }
 
-    int i=5;
-    int j;
-    for(j=1;j<=5;j=j+1){;
-   }
-
+    printf("%d",a);
     return 0;
 }
