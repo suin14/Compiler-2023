@@ -61,9 +61,7 @@ public class Executor {
             RetInfo retInfo = retInfos.get(0);
             if (retInfo != null) {
                 HashMap<String, Var> varTableFromRetInfo = retInfo.varTable();
-                if (varTableFromRetInfo != null) {
-                    return varTableFromRetInfo.get(ident);
-                }
+                return varTableFromRetInfo.get(ident);
             }
         }
         return null;
