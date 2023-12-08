@@ -462,8 +462,8 @@ public class GrammaticalAnalyser {
             ifLabels.get(ifLabels.size() - 1).put("else", labelGenerator.generateLabel("else"));
             ifLabels.get(ifLabels.size() - 1).put("if_end", labelGenerator.generateLabel("if_end"));
             ifLabels.get(ifLabels.size() - 1).put("if_block", labelGenerator.generateLabel("if_block"));
-            addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if"));
 
+            addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if"));
             getToken(); // if
             getToken(); // (
             analyseCond(String.valueOf(Word.IFTK)); // Cond
@@ -643,8 +643,10 @@ public class GrammaticalAnalyser {
             for (int i = 1; i < exp.size(); i++) {
                 Token nextToken = exp.get(i);
                 if (nextToken.typeIs(String.valueOf(Word.LBRACK))) { // [
+                    if (flag==0){
+                        intType++;
+                    }
                     flag++;
-                    intType++;
                     if (flag == 1) {
                         grammar.add(nextToken.toString());
                         exp1 = new ArrayList<>();
@@ -712,7 +714,7 @@ public class GrammaticalAnalyser {
         int intType = 0;
         if (exp.isEmpty()) {
             // 对于空列表的处理，可以根据需要抛出异常、返回默认值，或者执行其他逻辑
-            return intType; // 这里假设返回默认值 0，你可以根据实际情况返回合适的值或执行逻辑
+            return intType;
         }
         Token nextToken = exp.get(0);
         if (nextToken.typeIs(String.valueOf(Word.PLUS)) || nextToken.typeIs(String.valueOf(Word.MINU)) || nextToken.typeIs(String.valueOf(Word.NOT))) { // UnaryOp UnaryExp
