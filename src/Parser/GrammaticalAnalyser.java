@@ -273,7 +273,7 @@ public class GrammaticalAnalyser {
         String returnType = analyseFuncType();
         getToken(); // Ident
         Token ident = current;
-        if (functions.containsKey(current.getContent())||checkSymbol(ident)) {
+        if (functions.containsKey(current.getContent()) || checkSymbol(ident)) {
             error("b"); //名字重定义
         }
         PCode code = new PCode(Operator.FUNC, current.getContent());
