@@ -152,7 +152,7 @@ public class GrammaticalAnalyser {
     private void analyseConstDef() { // ConstDef → Ident { '[' ConstExp ']' } '=' ConstInitVal
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)){
+        if (checkSymbolInArea(current)){
             error("b"); // 名字重定义
         }
         addCode(Operator.VAR, areaID + "_" + current.getContent());
@@ -216,7 +216,7 @@ public class GrammaticalAnalyser {
     private void analyseVarDef() { // VarDef → Ident { '[' ConstExp ']' } | Ident { '[' ConstExp ']' } '=' InitVal
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)){
+        if (checkSymbolInArea(current)){
             error("b"); // 名字重定义
         }
         addCode(Operator.VAR, areaID + "_" + current.getContent());
@@ -357,7 +357,7 @@ public class GrammaticalAnalyser {
         getToken(); // Btype
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)){
+        if (checkSymbolInArea(current)){
             error("b"); // 名字重定义
         }
         Token nextToken = getNext();
@@ -1064,6 +1064,10 @@ public class GrammaticalAnalyser {
             }
         }
         return false;
+    }
+
+    private boolean checkSymbolInArea(Token token) {
+        return symboltable.get(area).findSymbol(token);
     }
 
     // 检查分号
