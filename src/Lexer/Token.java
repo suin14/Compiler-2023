@@ -114,12 +114,12 @@ public class Token {
         for (int i = 1; i < len - 1; i++) {
             char current = content.charAt(i);
             char currentNext = content.charAt(i + 1);
-            if (!isValidCharacter(current)) {
+            if (current != '\n' && !isValidCharacter(current)) {
                 if (isPercentD(current, currentNext)) {
                     continue;
                 }
                 return true;
-            } else if (isBackslashWithoutNewline(current, currentNext)) {
+            } else if ((isBackslashWithoutNewline(current, currentNext))) {
                 return true;
             }
         }
