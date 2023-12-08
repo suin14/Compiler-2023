@@ -12,7 +12,7 @@ int func2(int a[][2 , int b) {	// 11
 	int c = arr1[0][0;	// 12
 	arr2[1[0] = c;	// 13
 	c = (1+b+arr4[0][1)*3; 	// 14
-	return a[0[1];	// 15 
+	return a[0[1];	// 15
 }
 
 int main() {
