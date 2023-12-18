@@ -1,15 +1,10 @@
-// 测试a类错误
+// 测试d类错误 函数参数个数不匹配
+int func2(int a, int b) {
+	return a+b;
+}
+
 int main() {
-	printf("abcdefghijklmnopqrstuvwxyz");
-	printf("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-	printf("1234567890");
-	printf("    !()+,-./@[]^_`{}|~");
-	printf("hahahaha2333\n\n\n");
-	printf("124a \aa");	// 8
-	printf("bad\");	// 9
-	printf("noooooooo$");	// 10
-	printf("ahhhhhhhh #%\%");	// 11
-	printf("2049 & 2748");	// 12
-	printf("GOOD!\n");
+    int a = 0;
+	a = a + func2();
 	return 0;
 }

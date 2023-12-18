@@ -714,7 +714,7 @@ public class GrammaticalAnalyser {
         // | UnaryOp UnaryExp
         int intType = 0;
         if (exp.isEmpty()) {
-            // 对于空列表的处理，可以根据需要抛出异常、返回默认值，或者执行其他逻辑
+            // 空列表
             return intType;
         }
         Token nextToken = exp.get(0);
@@ -1148,5 +1148,9 @@ public class GrammaticalAnalyser {
 
     public ArrayList<PCode> getCodes() {
         return codes;
+    }
+
+    public boolean hasErrors() {
+        return !errors.isEmpty();
     }
 }

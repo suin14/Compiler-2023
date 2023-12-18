@@ -17,7 +17,9 @@ public class Analyser {
 
         handleErrors(grammaticalAnalyser); // 错误处理
 
-        executePCode(grammaticalAnalyser, input); // 执行 PCode
+        if(!grammaticalAnalyser.hasErrors()) {
+            executePCode(grammaticalAnalyser, input); // 执行 PCode
+        }
     }
 
     private void handleErrors(GrammaticalAnalyser grammaticalAnalyser) throws IOException {
