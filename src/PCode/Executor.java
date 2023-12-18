@@ -170,7 +170,12 @@ public class Executor {
     private void handlePopInstruction() {
         int value = pop();
         int address = pop();
-        stack.set(address, value);
+        // 检查address是否在合法范围内
+        if (address >= 0 && address < stack.size()) {
+            stack.set(address, value);
+        } else {
+            throw new IndexOutOfBoundsException("Invalid address: " + address);
+        }
     }
 
     private void handleArithmeticInstruction(PCode code) {

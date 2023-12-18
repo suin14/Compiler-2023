@@ -1,12 +1,10 @@
-int main(){
-    int i=1;
-    int j,a=0;
-    for(j=i-1;j<=5;j=6){
-        //j=j+1
-        ;
-        a=100;
-    }
+// 测试d类错误 函数参数个数不匹配
+int func2(int a, int b) {
+	return a+b;
+}
 
-    printf("%d",a);
-    return 0;
+int main() {
+    int a = 0;
+	a = a + func2();
+	return 0;
 }

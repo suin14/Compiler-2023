@@ -107,6 +107,9 @@ public class LexicalAnalyser {
         StringBuilder buffer = new StringBuilder(); //保存读取到的内容
         while ((current = getChar()) != null) {
             if (current == '"') { // 寻找到结束的‘"’
+                if(flag == 1) {
+                    buffer.append("\\");
+                }
                 token.add(new Token(String.valueOf(Word.STRCON), "\"" + String.valueOf(buffer) + "\"", line));
                 return;
             } else {
@@ -115,6 +118,9 @@ public class LexicalAnalyser {
                 } else {
                     if (flag == 1 && current == 'n') {
                         buffer.append("\n");
+                    } else if (flag == 1 && current != 'n') {
+                        buffer.append("\\");
+                        buffer.append(current);
                     } else {
                         buffer.append(current);
                     }

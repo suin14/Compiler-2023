@@ -152,7 +152,7 @@ public class GrammaticalAnalyser {
     private void analyseConstDef() { // ConstDef → Ident { '[' ConstExp ']' } '=' ConstInitVal
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)){
+        if (checkSymbolInArea(current)){
             error("b"); // 名字重定义
         }
         addCode(Operator.VAR, areaID + "_" + current.getContent());
@@ -216,7 +216,7 @@ public class GrammaticalAnalyser {
     private void analyseVarDef() { // VarDef → Ident { '[' ConstExp ']' } | Ident { '[' ConstExp ']' } '=' InitVal
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)){
+        if (checkSymbolInArea(current)){
             error("b"); // 名字重定义
         }
         addCode(Operator.VAR, areaID + "_" + current.getContent());
@@ -226,8 +226,9 @@ public class GrammaticalAnalyser {
             intType++;
             getToken(); // [
             analyseConstExp(getExp()); // ConstExp
-            getToken(); // ]
-            if (!current.typeIs(String.valueOf(Word.RBRACK))) {
+            if (getNext().typeIs(String.valueOf(Word.RBRACK))) {
+                getToken();//]
+            } else {
                 error("k");
             }
             nextToken = getNext();
@@ -271,7 +272,8 @@ public class GrammaticalAnalyser {
         ArrayList<Integer> params = new ArrayList<>();
         String returnType = analyseFuncType();
         getToken(); // Ident
-        if (functions.containsKey(current.getContent())) {
+        Token ident = current;
+        if (functions.containsKey(current.getContent()) || checkSymbol(ident)) {
             error("b"); //名字重定义
         }
         PCode code = new PCode(Operator.FUNC, current.getContent());
@@ -355,7 +357,7 @@ public class GrammaticalAnalyser {
         getToken(); // Btype
         getToken(); // Ident
         Token ident = current;
-        if (checkSymbol(current)){
+        if (checkSymbolInArea(current)){
             error("b"); // 名字重定义
         }
         Token nextToken = getNext();
@@ -461,8 +463,8 @@ public class GrammaticalAnalyser {
             ifLabels.get(ifLabels.size() - 1).put("else", labelGenerator.generateLabel("else"));
             ifLabels.get(ifLabels.size() - 1).put("if_end", labelGenerator.generateLabel("if_end"));
             ifLabels.get(ifLabels.size() - 1).put("if_block", labelGenerator.generateLabel("if_block"));
-            addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if"));
 
+            addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if"));
             getToken(); // if
             getToken(); // (
             analyseCond(String.valueOf(Word.IFTK)); // Cond
@@ -484,43 +486,67 @@ public class GrammaticalAnalyser {
             addCode(Operator.LABEL, ifLabels.get(ifLabels.size() - 1).get("if_end"));
             ifLabels.remove(ifLabels.size() - 1);
         } else if (nextToken.typeIs(String.valueOf(Word.FORTK))) { // 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
-            // todo
+            // ForStmt 表示初始化和更新部分，Cond 表示条件判断部分，Stmt 表示循环体部分
             forLabels.add(new HashMap<>());
             forLabels.get(forLabels.size() - 1).put("for", labelGenerator.generateLabel("for"));
             forLabels.get(forLabels.size() - 1).put("for_end", labelGenerator.generateLabel("for_end"));
             forLabels.get(forLabels.size() - 1).put("for_block", labelGenerator.generateLabel("for_block"));
-            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for"));
+            forLabels.get(forLabels.size() - 1).put("for_stmt", labelGenerator.generateLabel("for_stmt"));
+            forLabels.get(forLabels.size() - 1).put("for_cond", labelGenerator.generateLabel("for_cond"));
 
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for"));
             getToken(); // for
             forFlag++;
             getToken(); // (
             nextToken = getNext();
+            // ForStmt
+            // 初始化循环变量
             if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // ForStmt
                 analyseForStmt();
             }
             getToken(); // ;
             nextToken = getNext();
+            // Cond
+            // 标记 for_cond 循环体条件判断的位置
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_cond"));
             if (nextToken.typeSymbolizeExp()) { // Cond
                 analyseCond(String.valueOf(Word.FORTK));
+                // 生成条件判断的跳转指令
+                // cond不成立 -> for_end
+                addCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end"));
             }
+            // cond成立 -> for_block
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_block"));
             getToken(); // ;
+            // ForStmt
+            // 标记 for_stmt 循环变量更新的位置
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_stmt"));
             nextToken = getNext();
             if (nextToken.typeIs(String.valueOf(Word.IDENFR))) { // ForStmt
                 analyseForStmt();
             }
+            // 生成回到 for_cond 的跳转指令
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_cond"));
+
+            // 检查是否存在右小括号
             if (!getNext().typeIs(String.valueOf(Word.RPARENT))) {
                 error("j"); // 缺少右小括号’)’
             } else {
                 getToken(); //)
             }
-            addCode(Operator.JZ, forLabels.get(forLabels.size() - 1).get("for_end"));
-            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_block"));
 
-            forFlag--;
+            // 标记 for 循环主体的起始处
+            addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_block"));
             analyseStmt(); // Stmt
-            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for"));
+            forFlag--;
+
+            // 生成回到 for_stmt 的跳转指令
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_stmt"));
+            // 标记 for 循环结束的位置
             addCode(Operator.LABEL, forLabels.get(forLabels.size() - 1).get("for_end"));
+            // 移除该 for 循环的标签信息
             forLabels.remove(forLabels.size() - 1);
+
         } else if (nextToken.typeIs(String.valueOf(Word.BREAKTK))) { // 'break' ';'
             getToken(); // break
             addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_end"));
@@ -530,7 +556,7 @@ public class GrammaticalAnalyser {
             checkSemicn(); //;
         } else if (nextToken.typeIs(String.valueOf(Word.CONTINUETK))) { // 'continue' ';'
             getToken(); // continue
-            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for"));
+            addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_stmt"));
             if (forFlag == 0) {
                 error("m"); // 在非循环块中使用break和continue语句
             }
@@ -583,7 +609,6 @@ public class GrammaticalAnalyser {
     }
 
     private void analyseForStmt() { // ForStmt → LVal '=' Exp
-        // todo
         ArrayList<Token> exp = getExp();
         int intType = analyseLVal(exp); // LVal
         Token ident = exp.get(0);
@@ -591,6 +616,7 @@ public class GrammaticalAnalyser {
         checkConst(exp.get(0)); // 检查左值是否是常量
         getToken(); // =
         analyseExp(getExp()); // Exp
+        addCode(Operator.POP, getSymbol(ident).getAreaID() + "_" + ident.getContent());
         grammar.add("<ForStmt>");
     }
 
@@ -618,8 +644,10 @@ public class GrammaticalAnalyser {
             for (int i = 1; i < exp.size(); i++) {
                 Token nextToken = exp.get(i);
                 if (nextToken.typeIs(String.valueOf(Word.LBRACK))) { // [
+                    if (flag==0){
+                        intType++;
+                    }
                     flag++;
-                    intType++;
                     if (flag == 1) {
                         grammar.add(nextToken.toString());
                         exp1 = new ArrayList<>();
@@ -686,8 +714,8 @@ public class GrammaticalAnalyser {
         // | UnaryOp UnaryExp
         int intType = 0;
         if (exp.isEmpty()) {
-            // 对于空列表的处理，可以根据需要抛出异常、返回默认值，或者执行其他逻辑
-            return intType; // 这里假设返回默认值 0，你可以根据实际情况返回合适的值或执行逻辑
+            // 空列表
+            return intType;
         }
         Token nextToken = exp.get(0);
         if (nextToken.typeIs(String.valueOf(Word.PLUS)) || nextToken.typeIs(String.valueOf(Word.MINU)) || nextToken.typeIs(String.valueOf(Word.NOT))) { // UnaryOp UnaryExp
@@ -1038,6 +1066,10 @@ public class GrammaticalAnalyser {
         return false;
     }
 
+    private boolean checkSymbolInArea(Token token) {
+        return symboltable.get(area).findSymbol(token);
+    }
+
     // 检查分号
     private void checkSemicn() {
         if (getNext().typeIs(String.valueOf(Word.SEMICN))) {
@@ -1099,8 +1131,8 @@ public class GrammaticalAnalyser {
                 .orElse(null);
     }
 
-//     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
-//     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
+    //     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
+    //     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
     public void printError(FileWriter writer) throws IOException {
         errors.sort(Comparator.comparingInt(Errors::getline));
         try {
@@ -1116,5 +1148,9 @@ public class GrammaticalAnalyser {
 
     public ArrayList<PCode> getCodes() {
         return codes;
+    }
+
+    public boolean hasErrors() {
+        return !errors.isEmpty();
     }
 }
