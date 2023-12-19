@@ -40,7 +40,6 @@ public class Executor {
         }
     }
 
-
     private void push(int i) {
         stack.add(i);
     }
@@ -150,8 +149,8 @@ public class Executor {
                 }
                 case PRINT ->
                         handlePrintInstruction(code);
-                case VALUE, ADDRESS, DIMVAR,PLACEHOLDER, EXIT ->
-                        handleFlowControlInstruction(code);
+                case VALUE, ADDRESS, DIMVAR, PLACEHOLDER, EXIT ->
+                        handleFuncControlInstruction(code);
             }
         }
     }
@@ -286,7 +285,7 @@ public class Executor {
         prints.add(builder.substring(1, builder.length() - 1));
     }
 
-    private void handleFlowControlInstruction(PCode code) {
+    private void handleFuncControlInstruction(PCode code) {
         switch (code.getType()) {
             case VALUE -> {
                 Var var = getVar((String) code.getValue1());

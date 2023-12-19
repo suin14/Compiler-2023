@@ -20,16 +20,16 @@ public class GrammaticalAnalyser {
     private Token current;
     private final ArrayList<String> grammar;
 
+    // error
     private final HashMap<Integer, SymbolTable> symboltable = new HashMap<>();
     private final HashMap<String, Function> functions = new HashMap<>();
     private final ArrayList<Errors> errors = new ArrayList<>();
     private int area = -1;
     private boolean needReturn = false;
     private int forFlag = 0;
-
-    // pcode
     private int areaID = -1;
 
+    // pcode
     private final ArrayList<PCode> codes = new ArrayList<>();
     private final LabelGenerator labelGenerator = new LabelGenerator();
     private final ArrayList<HashMap<String, String>> ifLabels = new ArrayList<>();
@@ -551,14 +551,14 @@ public class GrammaticalAnalyser {
             getToken(); // break
             addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_end"));
             if (forFlag == 0) {
-                error("m"); // 在非循环块中使用break和continue语句
+                error("m"); // 在非循环块中使用break语句
             }
             checkSemicn(); //;
         } else if (nextToken.typeIs(String.valueOf(Word.CONTINUETK))) { // 'continue' ';'
             getToken(); // continue
             addCode(Operator.JMP, forLabels.get(forLabels.size() - 1).get("for_stmt"));
             if (forFlag == 0) {
-                error("m"); // 在非循环块中使用break和continue语句
+                error("m"); // 在非循环块中使用continue语句
             }
             checkSemicn(); //;
         } else if (nextToken.typeIs(String.valueOf(Word.RETURNTK))) { // 'return' [Exp] ';'
@@ -588,7 +588,7 @@ public class GrammaticalAnalyser {
                 param++;
                 nextToken = getNext();
             }
-            if (strcon.checkFormat()) {
+            if (!strcon.checkFormat()) {
                 error("a", strcon.getline()); // 非法符号
             }
             if (param != strcon.cntFormat()) {
@@ -849,12 +849,14 @@ public class GrammaticalAnalyser {
         return intType;
     }
 
-    private int analyseAddExp(ArrayList<Token> exp) { // AddExp → MulExp | AddExp ('+' | '−') MulExp
+    private int analyseAddExp(ArrayList<Token> exp) {
+        // AddExp → MulExp | AddExp ('+' | '−') MulExp
+        // 改写为: AddExp → MulExp { ('+' | '−') MulExp }
         int intType = 0;
         Exps exps = divideExp(exp, new ArrayList<>(Arrays.asList(String.valueOf(Word.PLUS), String.valueOf(Word.MINU))));
         int j = 0;
         for (ArrayList<Token> exp1 : exps.getTokens()) {
-            intType = analyseMulExp(exp1); // MulExp
+            intType = analyseMulExp(exp1); // { ('+' | '−') MulExp }
             if (j > 0) {
                 if (exps.getSymbols().get(j - 1).typeIs(String.valueOf(Word.PLUS))) {
                     addCode(Operator.ADD);
@@ -863,7 +865,7 @@ public class GrammaticalAnalyser {
                 }
             }
             grammar.add("<AddExp>");
-            if (j < exps.getSymbols().size()) { // AddExp ('+' | '−') MulExp
+            if (j < exps.getSymbols().size()) { // MulExp
                 grammar.add(exps.getSymbols().get(j++).toString());
             }
         }
@@ -1099,12 +1101,13 @@ public class GrammaticalAnalyser {
         return functions.getOrDefault(token.getContent(), null);
     }
 
+    // 检查函数参数类型
     private void checkParamsType(Token ident, ArrayList<Integer> params, ArrayList<Integer> rparams) {
         if (params.size() != rparams.size()) {
             error("d", ident.getline());
         } else {
             for (int i = 0; i < rparams.size(); i++) {
-                if (!params.get(i).equals(rparams.get(i))) {
+                if (!params.get(i).equals(rparams.get(i))) {  // 函数类型不匹配
                     error("e", ident.getline());
                 }
             }
@@ -1131,8 +1134,8 @@ public class GrammaticalAnalyser {
                 .orElse(null);
     }
 
-    //     使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
-    //     同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
+    // 使用了 Comparator.comparingInt 和 Lambda 表达式来替代匿名比较器类。
+    // 同时使用 try-with-resources 语句管理文件写入，自动确保资源被正确关闭，无需手动调用 writer.close()方法。
     public void printError(FileWriter writer) throws IOException {
         errors.sort(Comparator.comparingInt(Errors::getline));
         try {

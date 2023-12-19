@@ -40,7 +40,7 @@ public class LexicalAnalyser {
         Character current;
         while ((current = getChar()) != null) {
             switch (current) {
-                case ' ', '\r', '\t' -> {
+                case ' ', '\r', '\t' -> {  //过滤不必要的空格
                 }
                 case '+', '-', '*', '%', '(', ')', '[', ']', '{', '}', ',', ';' -> token.add(new Token(current, line));
                 case '/' -> analyseSlash();
@@ -56,7 +56,6 @@ public class LexicalAnalyser {
                 }
             }
         }
-
     }
 
     private void analyseSlash() {

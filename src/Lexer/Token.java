@@ -9,7 +9,7 @@ public class Token {
 
     public Token(String identification, int line) {    // 标识符
         this.identification = identification;
-        this.type = new NodeMap().getType(this.identification);  // type从NodeWordMap中获取
+        this.type = new NodeMap().getType(this.identification);  // type从NodeMap中获取
         this.content = this.identification; // 读取到的内容
         this.line = line;
     }
@@ -118,12 +118,12 @@ public class Token {
                 if (isPercentD(current, currentNext)) {
                     continue;
                 }
-                return true;
+                return false;
             } else if ((isBackslashWithoutNewline(current, currentNext))) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     // 检查字符是否为有效字符
