@@ -1,10 +1,12 @@
-// 测试d类错误 函数参数个数不匹配
-void func2(int a, int b) {
-	return ;
+const integer const1 = 1, const2 = -100;
+integer change1;
+integer gets1(integer var1,integer var2){
+   const1 = 999;
+   change1 = var1 + var2
+   return (change1);
 }
-
-int main() {
-    int a = 0;
-    func2();
-	return ;
+integer main(){
+   change1 = 10;
+   printf("Hello World$");
+   return 0;
 }

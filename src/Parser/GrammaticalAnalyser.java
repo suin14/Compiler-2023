@@ -29,6 +29,8 @@ public class GrammaticalAnalyser {
     private int forFlag = 0;
     private int areaID = -1;
 
+    public boolean d_error = false;
+
     // pcode
     private final ArrayList<PCode> codes = new ArrayList<>();
     private final LabelGenerator labelGenerator = new LabelGenerator();
@@ -1105,6 +1107,7 @@ public class GrammaticalAnalyser {
     private void checkParamsType(Token ident, ArrayList<Integer> params, ArrayList<Integer> rparams) {
         if (params.size() != rparams.size()) {
             error("d", ident.getline());
+            d_error = true;
         } else {
             for (int i = 0; i < rparams.size(); i++) {
                 if (!params.get(i).equals(rparams.get(i))) {  // 函数类型不匹配
@@ -1119,6 +1122,7 @@ public class GrammaticalAnalyser {
         if (params != null) {
             if (params.size() != 0) {
                 error("d", ident.getline()); // 函数参数个数不匹配
+                d_error = true;
             }
         }
     }

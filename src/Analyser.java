@@ -17,7 +17,7 @@ public class Analyser {
 
         handleErrors(grammaticalAnalyser); // 错误处理
 
-        if(!grammaticalAnalyser.hasErrors()) {
+        if(!grammaticalAnalyser.d_error) {
             executePCode(grammaticalAnalyser, input); // 生成 PCode
         }
     }
